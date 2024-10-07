@@ -1199,6 +1199,31 @@ footer .credits a {
   }
 }
 
+.button {
+  display: inline-block;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #6e8efb, #a777e3); /* Gradient background */
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 50px; /* Rounded corners */
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* Shadow for depth */
+  transition: all 0.3s ease; /* Smooth transition on hover */
+}
+
+.button:hover {
+  background: linear-gradient(135deg, #5d73e9, #9c65d1); /* Darker gradient on hover */
+  box-shadow: 0 15px 20px rgba(0, 0, 0, 0.2); /* Increase shadow on hover */
+  transform: translateY(-3px); /* Slight lift effect on hover */
+}
+
+.button:active {
+  transform: translateY(1px); /* Slight depression on click */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* Reduced shadow when clicked */
+}
+
 @media (min-width: 768px) {
   .box-shadow-full {
     padding: 3rem;
