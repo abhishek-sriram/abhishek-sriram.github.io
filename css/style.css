@@ -427,9 +427,12 @@ a:focus-visible, button:focus-visible{
 .foot-bar{
   position:relative;z-index:1;
   max-width:var(--maxw);margin:0 auto;padding:56px 24px 32px;
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+  display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;
   border-top:1px solid var(--border-soft);margin-top:64px;
+  text-align:center;
+  width:100%;
 }
+.foot-bar .foot-note{width:100%;text-align:center;}
 .foot-note{font-family:var(--font-mono);font-size:0.74rem;color:var(--text-faint);}
 
 /* scroll to top */
