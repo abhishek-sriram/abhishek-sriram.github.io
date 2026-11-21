@@ -1,0 +1,112 @@
+/* Shared components. See DESIGN.md. */
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 var(--space-12);
+}
+
+.fig {
+  margin: 0;
+}
+
+.fig-caption {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink-3);
+  margin-top: var(--space-8);
+}
+
+.rule-double {
+  display: block;
+  width: 100%;
+  height: 0;
+  margin: 0;
+  border: 0;
+  border-top: 3px solid var(--ink);
+  position: relative;
+}
+
+.rule-double::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--space-4);
+  height: 1px;
+  background: var(--rule);
+}
+
+.btn {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  box-shadow: none;
+  transition: opacity var(--motion-duration) var(--ease-out);
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn:hover,
+.btn-primary:hover {
+  opacity: 0.82;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-primary:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.link-arrow {
+  font-family: var(--font-ui);
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+.link-arrow::after {
+  content: "\00a0\2192";
+  text-decoration: none;
+  display: inline-block;
+}
+
+.link-arrow:hover {
+  color: var(--signal);
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+
+.tag::before { content: "["; }
+.tag::after { content: "]"; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .link-arrow::after {
+    transition: none;
+  }
+}

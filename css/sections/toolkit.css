@@ -1,0 +1,237 @@
+/* Toolkit — AI-system layers as a horizontal pipeline. */
+
+.toolkit {
+  padding: var(--space-64) var(--space-24) var(--space-96);
+  background: var(--paper);
+}
+
+.toolkit-inner {
+  align-items: start;
+  row-gap: var(--space-48);
+}
+
+.toolkit-header {
+  grid-column: 1 / -1;
+  max-width: var(--measure);
+}
+
+.toolkit-header h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
+
+.toolkit-pipeline {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  column-gap: var(--space-12);
+  position: relative;
+  min-width: 0;
+  padding-top: var(--space-4);
+}
+
+.toolkit-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--space-4) + 0.525rem);
+  height: 1px;
+  background: var(--ink);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.toolkit-layer {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.toolkit-layer-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: 1.05rem;
+}
+
+.toolkit-layer-name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  line-height: 1.4;
+  background: var(--paper);
+  padding-right: var(--space-8);
+  white-space: nowrap;
+}
+
+.toolkit-arrow {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-3);
+  line-height: 1;
+  flex-shrink: 0;
+  background: var(--paper);
+  padding-inline: var(--space-4);
+  position: relative;
+  z-index: 1;
+}
+
+.toolkit-tools {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.toolkit-tool {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.toolkit-tool-name {
+  display: block;
+}
+
+.toolkit-tool--noted {
+  cursor: default;
+}
+
+.toolkit-tool--noted:hover .toolkit-tool-name,
+.toolkit-tool--noted:focus .toolkit-tool-name,
+.toolkit-tool--noted:focus-within .toolkit-tool-name {
+  color: var(--ink);
+}
+
+.toolkit-used-in {
+  position: absolute;
+  left: 0;
+  top: calc(100% + var(--space-4));
+  z-index: 3;
+  width: max-content;
+  max-width: 12rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  color: var(--ink-3);
+  background: var(--paper);
+  padding: var(--space-4) 0;
+  opacity: 0;
+  transform: translateY(var(--rise));
+  /* opacity only — keep links in the tab order for keyboard users */
+  transition:
+    opacity var(--motion-duration) var(--ease-out),
+    transform var(--motion-duration) var(--ease-out);
+}
+
+.toolkit-tool--noted:hover .toolkit-used-in,
+.toolkit-tool--noted:focus .toolkit-used-in,
+.toolkit-tool--noted:focus-within .toolkit-used-in,
+.toolkit-used-in:focus-within {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toolkit-used-label {
+  color: var(--ink-3);
+}
+
+.toolkit-used-link {
+  color: var(--signal);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+}
+
+.toolkit-used-link:hover,
+.toolkit-used-link:focus-visible {
+  color: var(--ink);
+}
+
+.toolkit-used-sep {
+  color: var(--ink-3);
+}
+
+@media (max-width: 900px) {
+  .toolkit-pipeline {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    padding-top: 0;
+  }
+
+  .toolkit-rail {
+    display: none;
+  }
+
+  .toolkit-layer {
+    gap: var(--space-12);
+    padding-bottom: var(--space-24);
+  }
+
+  .toolkit-layer:not(:last-child)::after {
+    content: "↓";
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--ink-3);
+    margin-top: var(--space-16);
+    line-height: 1;
+  }
+
+  .toolkit-layer-head {
+    min-height: 0;
+  }
+
+  .toolkit-arrow {
+    display: none;
+  }
+
+  .toolkit-layer-name {
+    padding-right: 0;
+    background: transparent;
+  }
+
+  .toolkit-used-in {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 320px) {
+  .toolkit {
+    padding-inline: var(--space-16);
+  }
+
+  .toolkit-tool {
+    font-size: 0.875rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolkit-used-in {
+    transition: none;
+    transform: none;
+  }
+
+  .toolkit-tool--noted:hover .toolkit-used-in,
+  .toolkit-tool--noted:focus .toolkit-used-in,
+  .toolkit-tool--noted:focus-within .toolkit-used-in {
+    transform: none;
+  }
+}

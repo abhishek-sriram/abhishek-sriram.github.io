@@ -1,0 +1,147 @@
+/* Foundation: reset, type, paper background, page grid. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--paper);
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+:root[data-theme="dark"] body::before {
+  mix-blend-mode: screen;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) body::before {
+    mix-blend-mode: screen;
+  }
+}
+
+/* Hairlines on the edges of the 1200px page column. */
+body::after {
+  content: "";
+  position: fixed;
+  z-index: 40;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: min(100%, var(--page-max));
+  transform: translateX(-50%);
+  pointer-events: none;
+  border-left: 1px solid var(--margin-rule);
+  border-right: 1px solid var(--margin-rule);
+}
+
+img,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+h1 { font-size: var(--text-h1); }
+h2 { font-size: var(--text-h2); }
+
+em,
+i {
+  font-style: italic;
+}
+
+.prose {
+  max-width: var(--measure);
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: var(--space-4);
+  border-radius: var(--radius);
+}
+
+::selection {
+  background: var(--marker);
+  color: var(--selection-fg);
+}
+
+.page {
+  width: min(100%, var(--page-max));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-24);
+  position: relative;
+}
+
+.section {
+  position: relative;
+  border-top: 3px solid var(--ink);
+  background: var(--paper);
+}
+
+.section::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 auto 0;
+  top: var(--space-4);
+  height: 1px;
+  background: var(--rule);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.nav {
+  background: var(--paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,27 @@
+---
+description: Applied AI Field Journal design system. Read before any UI work.
+alwaysApply: true
+---
+
+# Design system
+
+Before any UI, layout, or styling change, read `DESIGN.md` and follow it.
+
+- Use only custom properties from `css/tokens.css`. No hard-coded colours, font stacks, spacing, or radii outside that file.
+- Static HTML, CSS, and vanilla JS only. No frameworks, build step, or npm dependencies.
+- Touch only the files named in the task. Leave other sections alone.
+- Do not invent facts about the owner. Copy comes from `index.html`. If a fact is missing, write `TODO(abhishek): ...`.
+- Motion is 150–250ms `ease-out`, opacity and 8px `translateY` only, with `prefers-reduced-motion` respected.
+- `--signal` is the only accent.
+
+```css
+/* Wrong */
+color: #B8401A;
+font-family: Georgia, serif;
+border-radius: 12px;
+
+/* Right */
+color: var(--signal);
+font-family: var(--font-serif);
+border-radius: var(--radius);
+```

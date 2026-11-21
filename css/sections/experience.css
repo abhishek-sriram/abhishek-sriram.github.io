@@ -1,0 +1,207 @@
+/* Experience — field log of dated shipping entries. */
+
+.experience {
+  padding: var(--space-64) var(--space-24) var(--space-96);
+}
+
+.experience-inner {
+  align-items: start;
+  row-gap: var(--space-48);
+}
+
+.experience-header {
+  grid-column: 1 / -1;
+  max-width: var(--measure);
+}
+
+.experience-header h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
+
+.field-log-wrap {
+  grid-column: 1 / -1;
+  position: relative;
+  padding-left: 0;
+}
+
+.field-log-rule {
+  display: none;
+}
+
+.field-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-48);
+}
+
+.field-log-item {
+  margin: 0;
+  padding: 0;
+}
+
+.log-entry {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-12);
+  align-items: start;
+}
+
+.log-date {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-8);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+.log-date time {
+  font: inherit;
+  color: inherit;
+}
+
+.log-date .tag {
+  color: var(--signal);
+}
+
+.log-role h3 {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1.125rem, 1rem + 0.4vw, 1.375rem);
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.log-org,
+.log-loc {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.log-loc {
+  color: var(--ink-3);
+}
+
+.log-body > p {
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-serif);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--ink-2);
+  max-width: var(--measure);
+}
+
+.log-body > .log-built {
+  margin: 0 0 var(--space-12);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.log-body .link-arrow {
+  display: inline-block;
+  font-size: 0.875rem;
+}
+
+.log-metric {
+  display: none;
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+  .field-log-wrap {
+    padding-left: var(--space-24);
+  }
+
+  .field-log-rule {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--rule);
+    transform: scaleY(0);
+    transform-origin: top center;
+    pointer-events: none;
+  }
+
+  .field-log-rule.is-static {
+    transform: scaleY(1);
+  }
+
+  .log-entry {
+    grid-template-columns: 11rem minmax(10rem, 14rem) minmax(0, 1fr);
+    column-gap: var(--space-24);
+    row-gap: var(--space-8);
+    align-items: start;
+  }
+
+  .log-entry.has-metric {
+    grid-template-columns: 11rem minmax(10rem, 14rem) minmax(0, 1fr) auto;
+  }
+
+  .log-date {
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    gap: var(--space-4);
+    padding-top: var(--space-4);
+  }
+
+  .log-metric {
+    display: block;
+    padding-top: var(--space-4);
+    text-align: right;
+    color: var(--ink-3);
+  }
+}
+
+@media (min-width: 1100px) {
+  .log-entry {
+    grid-template-columns: 12rem minmax(12rem, 16rem) minmax(0, 1fr);
+  }
+
+  .log-entry.has-metric {
+    grid-template-columns: 12rem minmax(12rem, 16rem) minmax(0, 1fr) 5.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-log-rule {
+    transform: scaleY(1);
+    transition: none;
+  }
+}
+
+@media (max-width: 320px) {
+  .experience {
+    padding-inline: var(--space-16);
+  }
+
+  .log-built {
+    word-break: break-word;
+  }
+}

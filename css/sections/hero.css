@@ -1,0 +1,241 @@
+/* Hero — Applied AI Field Journal opening spread. */
+
+.hero {
+  position: relative;
+  padding: calc(var(--nav-h) + var(--space-24)) var(--space-24) var(--space-48);
+  text-align: left;
+  max-width: none;
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.hero-inner {
+  align-items: start;
+  row-gap: var(--space-24);
+}
+
+.hero-dateline {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+.hero-copy {
+  grid-column: 1 / span 7;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hero-title {
+  margin: 0 0 var(--space-12);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: var(--text-h1);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.hero-emph {
+  font-style: italic;
+  color: var(--signal);
+}
+
+.hero-standfirst {
+  margin: 0 0 var(--space-12);
+  font-family: var(--font-serif);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--ink-2);
+  max-width: 42ch;
+}
+
+.hero-byline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+
+.hero-byline-mark {
+  flex-shrink: 0;
+  width: var(--space-8);
+  height: var(--space-8);
+  background: var(--signal);
+  border-radius: 0;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-16);
+  margin: 0 0 var(--space-16);
+  justify-content: flex-start;
+}
+
+.hero-links {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+
+.hero-links a {
+  color: var(--ink-3);
+  text-decoration: none;
+  transition: color var(--motion-duration) var(--ease-out);
+}
+
+.hero-links a:hover {
+  color: var(--signal);
+}
+
+.hero-links-sep {
+  margin-inline: var(--space-8);
+  color: var(--ink-3);
+}
+
+.hero-fig {
+  grid-column: 8 / span 5;
+  min-width: 0;
+  margin: 0;
+  align-self: start;
+}
+
+.hero-diagram {
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  color: var(--ink);
+}
+
+.hero-diagram-labels text {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  fill: var(--ink);
+  text-anchor: middle;
+}
+
+.hero-diagram-nodes rect {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.hero-diagram-paths path {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.hero-traveler {
+  fill: var(--signal);
+  stroke: none;
+}
+
+.hero-fig .fig-caption {
+  max-width: 36ch;
+}
+
+.hero-proof-rule {
+  grid-column: 1 / -1;
+  margin: var(--space-16) 0 0;
+}
+
+.hero-proof {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-24);
+  margin-top: var(--space-16);
+  padding-top: var(--space-8);
+}
+
+.hero-proof-item {
+  min-width: 0;
+}
+
+.hero-proof-num {
+  display: block;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 3vw + 1rem, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: var(--space-8);
+}
+
+.hero-proof-cap {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+  max-width: 28ch;
+}
+
+.hero-proof-cap a {
+  color: var(--ink-3);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+  transition: color var(--motion-duration) var(--ease-out);
+}
+
+.hero-proof-cap a:hover {
+  color: var(--signal);
+}
+
+@media (max-width: 900px) {
+  .hero {
+    padding-top: calc(var(--nav-h) + var(--space-24));
+    padding-bottom: var(--space-32);
+  }
+
+  .hero-copy,
+  .hero-fig,
+  .hero-dateline,
+  .hero-proof-rule,
+  .hero-proof {
+    grid-column: 1 / -1;
+  }
+
+  .hero-title {
+    max-width: none;
+    font-size: clamp(2rem, 8vw + 0.5rem, 3rem);
+  }
+
+  .hero-fig {
+    margin-top: var(--space-8);
+  }
+
+  .hero-diagram {
+    max-width: 320px;
+  }
+
+  .hero-proof {
+    grid-template-columns: 1fr;
+    gap: var(--space-16);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-links a,
+  .hero-proof-cap a {
+    transition: none;
+  }
+}
