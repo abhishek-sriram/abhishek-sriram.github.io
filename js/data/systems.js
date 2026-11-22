@@ -31,11 +31,8 @@ export const systems = [
         col: 0,
         row: 0,
         what: 'Questionnaire intake using PHQ-9 and GAD-7 to screen for depression and anxiety.',
-        // TODO(abhishek): why this questionnaire pair was chosen over alternatives
-        why: null,
-        // TODO(abhishek): tradeoff of questionnaire length vs completion rate
-        tradeoff: null,
-        // TODO(abhishek): intake volume or completion metric
+        why: 'Validated, widely used screening instruments give inputs that clinicians already recognise.',
+        tradeoff: 'Responses are self-reported, so the output is a screening signal, not a diagnosis.',
         metric: null,
         layers: ['flow'],
       },
@@ -46,11 +43,8 @@ export const systems = [
         col: 1,
         row: 0,
         what: 'ML severity prediction layered on the questionnaire screening.',
-        // TODO(abhishek): why this severity model family was chosen
-        why: null,
-        // TODO(abhishek): tradeoff of model complexity vs interpretability
-        tradeoff: null,
-        // TODO(abhishek): severity-prediction accuracy or calibration metric
+        why: 'Goes beyond a raw questionnaire score by predicting severity from the full response pattern.',
+        tradeoff: 'Only as reliable as the data it was trained on.',
         metric: null,
         layers: ['flow'],
       },
@@ -61,11 +55,8 @@ export const systems = [
         col: 2,
         row: 0,
         what: 'SHAP explainability over the severity prediction.',
-        // TODO(abhishek): why SHAP specifically (vs other attribution methods)
-        why: null,
-        // TODO(abhishek): tradeoff of explanation fidelity vs latency
-        tradeoff: null,
-        // TODO(abhishek): explanation latency or coverage metric
+        why: "A screening result is hard to trust if nobody can see what drove it; SHAP shows which responses pushed the prediction.",
+        tradeoff: "Adds computation, and it explains the model's behaviour, not the cause of someone's condition.",
         metric: null,
         layers: ['flow'],
       },
@@ -76,11 +67,8 @@ export const systems = [
         col: 3,
         row: 0,
         what: 'Custom Mental Health Index derived from the screening and severity path.',
-        // TODO(abhishek): why a custom index instead of raw scores alone
-        why: null,
-        // TODO(abhishek): tradeoff in how the index is composed
-        tradeoff: null,
-        // TODO(abhishek): index distribution or validation metric
+        why: 'One trackable number makes change over time easy to see.',
+        tradeoff: 'A single score compresses detail, so it should sit beside the symptom-level view.',
         metric: null,
         layers: ['flow'],
       },
@@ -91,11 +79,8 @@ export const systems = [
         col: 4,
         row: 0,
         what: 'Real-time risk escalation when screening signals warrant it.',
-        // TODO(abhishek): why these escalation thresholds exist
-        why: null,
-        // TODO(abhishek): tradeoff of sensitivity vs false alarms
-        tradeoff: null,
-        // TODO(abhishek): escalation latency or precision metric
+        why: 'High-risk responses should not wait for a report to be read.',
+        tradeoff: 'The threshold trades missed cases against false alarms.',
         metric: null,
         layers: ['flow'],
       },
@@ -106,11 +91,8 @@ export const systems = [
         col: 2,
         row: 1,
         what: 'Longitudinal tracking store for screening history over time.',
-        // TODO(abhishek): why longitudinal storage is required for the product
-        why: null,
-        // TODO(abhishek): tradeoff of retention window vs storage cost
-        tradeoff: null,
-        // TODO(abhishek): retention or query-latency metric
+        why: 'Repeated screenings show trends that a single snapshot cannot.',
+        tradeoff: 'Stores sensitive history, so it needs careful access and privacy handling.',
         metric: null,
         layers: ['flow'],
       },
@@ -121,11 +103,8 @@ export const systems = [
         col: 4,
         row: 1,
         what: 'LLaMA 3.3 70B via Groq generating personalized, symptom-specific guidance instead of generic advice.',
-        // TODO(abhishek): why LLaMA 3.3 70B via Groq for this guidance step
-        why: null,
-        // TODO(abhishek): tradeoff of model size vs response latency/cost
-        tradeoff: null,
-        // TODO(abhishek): guidance latency or quality metric
+        why: 'A large open-weight model can write symptom-specific guidance instead of generic advice, and hosted Groq inference keeps responses quick enough for an interactive flow without running GPUs.',
+        tradeoff: 'Relies on a third-party hosted API and sends user text off-platform, and generated guidance is support, not clinical advice.',
         metric: null,
         layers: ['flow'],
       },
@@ -162,7 +141,7 @@ export const systems = [
     id: 'b4igo',
     title: 'B4iGo conversational agent',
     status: 'internal',
-    note: 'Details generalised for confidentiality',
+    note: 'Details generalised for confidentiality.',
     summary:
       'Multimodal LLM-powered conversational chatbot on the B4iGo platform at Infobell IT. Users query their digital footprint and end-of-life preferences in natural language. RAG pipelines perform privacy-preserving retrieval across multiple sensitive data vaults.',
     layers: ['flow', 'privacy'],
@@ -189,12 +168,9 @@ export const systems = [
         kind: 'model',
         col: 1,
         row: 0,
-        what: 'Multimodal LLM-powered conversational agent that answers in natural language.',
-        // TODO(abhishek): why this multimodal LLM stack was selected
-        why: null,
-        // TODO(abhishek): tradeoff of multimodal capability vs cost
+        what: 'Lets users ask in natural language about their digital footprint and end-of-life preferences.',
+        why: 'Plain-language questions are easier than navigating many separate records.',
         tradeoff: null,
-        // TODO(abhishek): agent latency or satisfaction metric
         metric: null,
         layers: ['flow'],
       },
@@ -205,11 +181,8 @@ export const systems = [
         col: 2,
         row: 0,
         what: 'RAG pipelines for precise, privacy-preserving retrieval across sensitive vaults.',
-        // TODO(abhishek): why RAG over fine-tuning for vault-backed answers
-        why: null,
-        // TODO(abhishek): tradeoff of retrieval precision vs recall
-        tradeoff: null,
-        // TODO(abhishek): retrieval precision or latency metric
+        why: "Answers are grounded in the user's own records, not in what the model remembers.",
+        tradeoff: 'Strict privacy boundaries around sensitive data limit how freely one query can combine sources.',
         metric: null,
         layers: ['flow', 'privacy'],
       },
@@ -220,11 +193,8 @@ export const systems = [
         col: 3,
         row: 0,
         what: 'Multiple sensitive data vaults queried through privacy-preserving retrieval.',
-        // TODO(abhishek): why vault separation was required
-        why: null,
-        // TODO(abhishek): tradeoff of vault isolation vs retrieval complexity
+        why: 'Retrieval is designed to be privacy-preserving across multiple sensitive data vaults.',
         tradeoff: null,
-        // TODO(abhishek): vault access or isolation metric
         metric: null,
         layers: ['flow', 'privacy'],
       },
