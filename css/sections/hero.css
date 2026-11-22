@@ -8,6 +8,69 @@
   margin: 0;
   background: var(--paper);
   color: var(--ink);
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+/* Quiet depth: paper-2 plate behind the diagram, not a glow. */
+.hero-fig::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--space-16) * -1);
+  z-index: -1;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+
+.js .hero-fig::before {
+  animation:
+    hero-enter var(--motion-slow) var(--ease-out) both,
+    reveal-failsafe 0s linear 3s forwards;
+  animation-delay: var(--enter-delay, 120ms), 3s;
+}
+
+.js .hero-enter {
+  animation:
+    hero-enter var(--motion-slow) var(--ease-out) both,
+    reveal-failsafe 0s linear 3s forwards;
+  animation-delay: var(--enter-delay, 0ms), 3s;
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-line-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-node-pulse {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  45%,
+  55% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
 }
 
 .hero-inner {
@@ -23,6 +86,7 @@
   letter-spacing: 0.04em;
   color: var(--ink-3);
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .hero-copy {
@@ -41,6 +105,24 @@
   line-height: 1.08;
   letter-spacing: -0.02em;
   color: var(--ink);
+  overflow-wrap: break-word;
+}
+
+.hero-title-line {
+  display: block;
+}
+
+/* Readable on first paint; hidden entrance only after JS arms the reveal. */
+.js .hero-title.is-armed:not(.is-in) .hero-title-line {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fx-reveal-failsafe 0s linear 3s forwards;
+}
+
+.js .hero-title.is-in .hero-title-line {
+  opacity: 1;
+  animation: hero-line-rise var(--motion-slow) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms);
 }
 
 .hero-emph {
@@ -59,21 +141,29 @@
 
 .hero-byline {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-8);
   margin: 0 0 var(--space-16);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   line-height: 1.4;
   color: var(--ink-3);
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .hero-byline-mark {
   flex-shrink: 0;
   width: var(--space-8);
   height: var(--space-8);
+  margin-top: 0.3em;
   background: var(--signal);
   border-radius: 0;
+}
+
+.js .hero-byline-mark {
+  animation: hero-enter var(--motion-slow) var(--ease-out) both;
+  animation-delay: 160ms;
 }
 
 .hero-actions {
@@ -85,22 +175,88 @@
   justify-content: flex-start;
 }
 
+/* Primary: ink sweeps in from the left (background-size); arrow nudges 3px. */
+.hero-actions .btn-primary {
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--ink), var(--ink));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 100% 100%;
+  color: var(--paper);
+  transition:
+    background-size var(--motion-duration) var(--ease-out),
+    color var(--motion-duration) var(--ease-out),
+    border-color var(--motion-duration) var(--ease-out);
+}
+
+.hero-actions .btn-primary::after {
+  transition: transform var(--motion-duration) var(--ease-out);
+}
+
+.hero-actions .btn-primary:focus-visible {
+  background-size: 100% 100%;
+  color: var(--paper);
+  transform: none;
+}
+
+.hero-actions .btn-primary:focus-visible::after {
+  transform: translateX(3px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-actions .btn-primary {
+    background-size: 0 100%;
+    color: var(--ink);
+  }
+
+  .hero-actions .btn-primary:hover,
+  .hero-actions .btn-primary:focus-visible {
+    background-size: 100% 100%;
+    color: var(--paper);
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-actions .btn-primary:hover::after,
+  .hero-actions .btn-primary:focus-visible::after {
+    transform: translateX(3px);
+  }
+}
+
+.hero-actions .link-arrow {
+  text-decoration: none;
+}
+
 .hero-links {
   margin: 0;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   line-height: 1.4;
   color: var(--ink-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0;
+  row-gap: var(--space-8);
 }
 
 .hero-links a {
   color: var(--ink-3);
-  text-decoration: none;
   transition: color var(--motion-duration) var(--ease-out);
 }
 
-.hero-links a:hover {
+.hero-links a.fx-underline {
+  background-image: linear-gradient(var(--signal), var(--signal));
+}
+
+.hero-links a:focus-visible {
   color: var(--signal);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-links a:hover {
+    color: var(--signal);
+  }
 }
 
 .hero-links-sep {
@@ -109,6 +265,7 @@
 }
 
 .hero-fig {
+  position: relative;
   grid-column: 8 / span 5;
   min-width: 0;
   margin: 0;
@@ -127,23 +284,73 @@
   font-size: 11px;
   fill: var(--ink);
   text-anchor: middle;
+  pointer-events: none;
 }
 
-.hero-diagram-nodes rect {
+.hero-diagram-nodes .hero-node-box {
   fill: var(--paper);
   stroke: var(--ink);
   stroke-width: 1.5;
+}
+
+.hero-diagram-nodes .hero-node-ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.hero-node {
+  outline: none;
+  cursor: help;
+}
+
+.hero-node:focus-visible .hero-node-box {
+  stroke: var(--signal);
+}
+
+.hero-node.is-pulse .hero-node-ring {
+  animation: hero-node-pulse var(--motion-slow) var(--ease-out) 1;
 }
 
 .hero-diagram-paths path {
   stroke: var(--ink);
   stroke-width: 1.5;
   fill: none;
+  pointer-events: none;
 }
 
 .hero-traveler {
   fill: var(--signal);
   stroke: none;
+  pointer-events: none;
+}
+
+.hero-node-tip {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  padding: var(--space-4) var(--space-8);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  white-space: nowrap;
+  max-width: min(28ch, 100%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.hero-node-tip[hidden] {
+  display: none;
 }
 
 .hero-fig .fig-caption {
@@ -188,16 +395,42 @@
   max-width: 28ch;
 }
 
+.js .hero-proof-cap {
+  opacity: 0;
+  transition: opacity var(--motion-duration) var(--ease-out);
+}
+
+.js .hero-proof-item.is-proven .hero-proof-cap {
+  opacity: 1;
+}
+
 .hero-proof-cap a {
   color: var(--ink-3);
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-  text-decoration-thickness: 1px;
   transition: color var(--motion-duration) var(--ease-out);
 }
 
-.hero-proof-cap a:hover {
+.hero-proof-cap a:focus-visible {
   color: var(--signal);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-proof-cap a:hover {
+    color: var(--signal);
+  }
+}
+
+@media (max-width: 1100px) {
+  .hero-copy {
+    grid-column: 1 / span 7;
+  }
+
+  .hero-fig {
+    grid-column: 8 / span 5;
+  }
+
+  .hero-title {
+    font-size: clamp(2.25rem, 4vw + 1rem, 3.75rem);
+  }
 }
 
 @media (max-width: 900px) {
@@ -223,6 +456,10 @@
     margin-top: var(--space-8);
   }
 
+  .hero-fig::before {
+    inset: calc(var(--space-8) * -1);
+  }
+
   .hero-diagram {
     max-width: 320px;
   }
@@ -233,9 +470,74 @@
   }
 }
 
+@media (max-width: 390px) {
+  .hero {
+    padding-inline: var(--space-16);
+    padding-bottom: var(--space-32);
+  }
+
+  .hero-title {
+    font-size: clamp(1.875rem, 9vw + 0.25rem, 2.5rem);
+  }
+
+  .hero-standfirst {
+    max-width: none;
+  }
+
+  .hero-actions {
+    gap: var(--space-12);
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-node-tip {
+    white-space: normal;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-links a,
-  .hero-proof-cap a {
+  .hero-proof-cap,
+  .hero-proof-cap a,
+  .hero-actions .btn-primary,
+  .hero-actions .btn-primary::after {
     transition: none;
+  }
+
+  .js .hero-enter,
+  .js .hero-byline-mark,
+  .js .hero-fig::before {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .js .hero-title .hero-title-line,
+  .js .hero-title.is-armed:not(.is-in) .hero-title-line,
+  .js .hero-title.is-in .hero-title-line {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .js .hero-proof-cap,
+  .js .hero-proof-item.is-proven .hero-proof-cap {
+    opacity: 1;
+  }
+
+  .hero-node.is-pulse .hero-node-ring {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hero-actions .btn-primary {
+      background-size: 100% 100%;
+      color: var(--paper);
+    }
   }
 }

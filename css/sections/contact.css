@@ -4,11 +4,28 @@
   position: relative;
   background: var(--ink);
   color: var(--paper);
-  border-top: 3px solid var(--paper);
+  border-top: 3px solid transparent;
   padding: 0;
-  overflow: hidden;
+  overflow-x: clip;
 }
 
+/* Thick rule of the double rule — draws L→R on enter. */
+.contact::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: var(--paper);
+  transform: scaleX(1);
+  transform-origin: left center;
+  pointer-events: none;
+  z-index: 2;
+  transition: transform var(--fx-in) var(--ease-out);
+}
+
+/* Thin lower stroke of the double rule. */
 .contact::before {
   content: "";
   position: absolute;
@@ -19,6 +36,30 @@
   pointer-events: none;
   z-index: 1;
   display: block;
+  transform: scaleX(1);
+  transform-origin: left center;
+  transition: transform var(--fx-in) var(--ease-out);
+  transition-delay: 60ms;
+}
+
+@keyframes contact-rule-in {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.js .contact:not(.is-in)::before,
+.js .contact:not(.is-in)::after {
+  transform: scaleX(0);
+  animation: contact-rule-in 0s linear 3s forwards;
+}
+
+.js .contact.is-in::before,
+.js .contact.is-in::after,
+.js .contact:focus-within::before,
+.js .contact:focus-within::after {
+  transform: scaleX(1);
+  animation: none;
 }
 
 .contact-inner {
@@ -31,10 +72,15 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-32);
+  min-width: 0;
+  max-width: 100%;
+  transition: background-color var(--motion-slow) var(--ease-out);
 }
 
 .contact-header {
   max-width: var(--measure);
+  min-width: 0;
+  width: 100%;
 }
 
 .contact .kicker {
@@ -48,6 +94,7 @@
   font-size: var(--text-h2);
   line-height: 1.12;
   color: var(--paper);
+  overflow-wrap: break-word;
 }
 
 .contact-sub {
@@ -60,29 +107,52 @@
 }
 
 .contact-email-row {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--space-16);
   max-width: 100%;
+  min-width: 0;
+  width: 100%;
 }
 
 .contact-email {
   font-family: var(--font-serif);
-  font-size: clamp(1.5rem, 4vw + 0.5rem, 2.75rem);
+  font-size: clamp(1.375rem, 4vw + 0.35rem, 2.75rem);
   font-weight: 400;
-  line-height: 1.15;
+  line-height: 1.2;
   letter-spacing: -0.02em;
   color: var(--paper);
-  text-decoration: underline;
-  text-underline-offset: 0.12em;
-  text-decoration-thickness: 1px;
+  text-decoration: none;
+  overflow-wrap: anywhere;
   word-break: break-word;
+  max-width: 100%;
+  min-width: 0;
 }
 
-.contact-email:hover {
-  /* Keep paper-on-ink AA; signal fails on the inverted band. */
-  opacity: 0.82;
+/* Always partially drawn (30%); full wipe on hover / focus. */
+.contact-email.fx-underline {
+  background-image: linear-gradient(var(--paper), var(--paper));
+  background-size: 30% 1px;
+  transition: background-size var(--motion-slow) var(--ease-out);
+}
+
+.contact-email.fx-underline:focus-visible {
+  background-size: 100% 1px;
+  outline: 2px solid var(--paper);
+  outline-offset: var(--space-4);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-email.fx-underline {
+    background-size: 30% 1px;
+  }
+
+  .contact-email.fx-underline:hover,
+  .contact-email.fx-underline:focus-visible {
+    background-size: 100% 1px;
+  }
 }
 
 .contact-copy {
@@ -91,13 +161,55 @@
   color: var(--paper);
   background: transparent;
   align-self: center;
+  gap: var(--space-8);
+  transition:
+    color var(--motion-duration) var(--ease-out),
+    background-color var(--motion-duration) var(--ease-out),
+    border-color var(--motion-duration) var(--ease-out),
+    opacity var(--motion-duration) var(--ease-out);
 }
 
-.contact-copy:hover {
-  opacity: 0.82;
-  background: transparent;
-  color: var(--paper);
+.contact-copy-check {
+  display: none;
+  flex-shrink: 0;
+}
+
+.contact-copy-check path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset var(--motion-slow) var(--ease-out);
+}
+
+.contact-copy.is-copied .contact-copy-check {
+  display: block;
+}
+
+.contact-copy.is-copied .contact-copy-check path {
+  stroke-dashoffset: 0;
+}
+
+.contact-copy:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: var(--space-4);
+  opacity: 1;
+  background: var(--paper);
+  color: var(--ink);
   border-color: var(--paper);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-copy:hover {
+    opacity: 1;
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--paper);
+  }
+}
+
+.contact-copy.is-copied {
+  border-color: color-mix(in srgb, var(--paper) 70%, var(--signal));
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .contact-copy-status {
@@ -116,15 +228,65 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-16) var(--space-24);
+  max-width: 100%;
 }
 
 .contact .link-arrow {
   color: var(--paper);
 }
 
-.contact .link-arrow:hover {
+.contact .link-arrow.fx-underline {
+  background-image: linear-gradient(var(--paper), var(--paper));
+}
+
+.contact .link-arrow:focus-visible {
   color: var(--paper);
   opacity: 0.82;
+  outline: 2px solid var(--paper);
+  outline-offset: var(--space-4);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact .link-arrow:hover {
+    color: var(--paper);
+    opacity: 0.82;
+  }
+
+  .contact:hover .contact-inner {
+    background: color-mix(in srgb, var(--paper) 4%, transparent);
+  }
+}
+
+.contact:focus-within .contact-inner {
+  background: color-mix(in srgb, var(--paper) 4%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-email,
+  .contact-copy,
+  .contact-inner,
+  .contact::before,
+  .contact::after,
+  .contact-copy-check path {
+    transition: none;
+  }
+
+  .contact::before,
+  .contact::after,
+  .js .contact:not(.is-in)::before,
+  .js .contact:not(.is-in)::after {
+    transform: scaleX(1);
+  }
+
+  .contact-email.fx-underline,
+  .contact-email.fx-underline:hover,
+  .contact-email.fx-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+
+  .contact-copy.is-copied .contact-copy-check path {
+    stroke-dashoffset: 0;
+  }
 }
 
 @media (max-width: 640px) {
@@ -138,5 +300,15 @@
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-12);
+  }
+}
+
+@media (max-width: 390px) {
+  .contact-inner {
+    padding-inline: var(--space-16);
+  }
+
+  .contact-email {
+    font-size: clamp(1.25rem, 6vw + 0.25rem, 1.75rem);
   }
 }

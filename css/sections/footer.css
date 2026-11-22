@@ -27,18 +27,63 @@
   font-family: var(--font-ui);
   font-size: 0.875rem;
   color: color-mix(in srgb, var(--paper) 78%, transparent);
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-  text-decoration-thickness: 1px;
+  text-decoration: none;
   transition: color var(--motion-duration) var(--ease-out);
 }
 
-.foot-top:hover {
+.foot-top.fx-underline {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--paper) 78%, transparent),
+    color-mix(in srgb, var(--paper) 78%, transparent)
+  );
+}
+
+.foot-top::after {
+  content: "\00a0\2191";
+  display: inline-block;
+  text-decoration: none;
+  transition: transform var(--motion-duration) var(--ease-out);
+}
+
+.foot-top:focus-visible {
   color: var(--paper);
+  outline: 2px solid var(--paper);
+  outline-offset: var(--space-4);
+}
+
+.foot-top:focus-visible::after {
+  transform: translateY(-2px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .foot-top:hover {
+    color: var(--paper);
+  }
+
+  .foot-top:hover::after {
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 390px) {
+  .foot-bar {
+    padding-inline: var(--space-16);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .foot-top {
+  .foot-top,
+  .foot-top::after {
     transition: none;
+  }
+
+  .foot-top:focus-visible::after {
+    transform: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .foot-top:hover::after {
+      transform: none;
+    }
   }
 }

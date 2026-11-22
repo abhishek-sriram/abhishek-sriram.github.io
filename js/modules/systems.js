@@ -6,7 +6,10 @@ const NODE_W = 112;
 const NODE_H = 52;
 const PAD_X = 24;
 const PAD_Y = 28;
+const CORNER = 10;
 const MOBILE_MQ = '(max-width: 719px)';
+const HINT_KEY = 'systems-hint-dismissed';
+const ANNOTATION_FADE_MS = 180;
 const LAYER_LABELS = {
   flow: 'Flow',
   failure: 'Failure',
@@ -21,12 +24,16 @@ const state = {
   hoverId: null,
   tracing: false,
   traceTimer: null,
+  annotationTimer: null,
   reducedMotion: false,
+  hintDismissed: false,
+  privacyWasOn: false,
 };
 
 let els = {};
 let mqMobile = null;
 let mqReduce = null;
+let trailLayer = null;
 
 function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -201,6 +208,13 @@ function flowOrder(system) {
   return { nodes: order, edges };
 }
 
+function edgesDrawOrder(system) {
+  const { edges } = flowOrder(system);
+  const seen = new Set(edges.map((e) => edgeKey(e.from, e.to)));
+  const rest = system.edges.filter((e) => !seen.has(edgeKey(e.from, e.to)));
+  return [...edges, ...rest];
+}
+
 function parseHash() {
   const raw = window.location.hash.replace(/^#/, '');
   if (!raw.startsWith('systems')) return null;
@@ -225,6 +239,98 @@ function svgEl(name, attrs = {}) {
   return el;
 }
 
+function readHintDismissed() {
+  try {
+    return sessionStorage.getItem(HINT_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeHintDismissed() {
+  try {
+    sessionStorage.setItem(HINT_KEY, '1');
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+function ensureChrome() {
+  if (!els.hint) {
+    const hint = document.createElement('p');
+    hint.className = 'systems-hint';
+    hint.id = 'systemsHint';
+    hint.setAttribute('aria-hidden', 'true');
+    hint.textContent = 'Click a component';
+    els.figure?.appendChild(hint);
+    els.hint = hint;
+  }
+
+  if (!els.stepCounter && els.traceBtn) {
+    const wrap = document.createElement('div');
+    wrap.className = 'systems-trace-meta';
+    const counter = document.createElement('p');
+    counter.className = 'systems-step-counter';
+    counter.id = 'systemsStepCounter';
+    counter.setAttribute('aria-hidden', 'true');
+    counter.hidden = true;
+    els.traceBtn.replaceWith(wrap);
+    wrap.appendChild(els.traceBtn);
+    wrap.appendChild(counter);
+    els.stepCounter = counter;
+    els.traceMeta = wrap;
+  }
+
+  if (!els.tabIndicator && els.tabs) {
+    const indicator = document.createElement('span');
+    indicator.className = 'systems-tab-indicator';
+    indicator.setAttribute('aria-hidden', 'true');
+    els.tabs.appendChild(indicator);
+    els.tabIndicator = indicator;
+  }
+}
+
+function updateHint() {
+  if (!els.hint) return;
+  const show = !state.hintDismissed && !state.nodeId && !isMobile();
+  els.hint.hidden = !show;
+}
+
+function dismissHint() {
+  if (state.hintDismissed) return;
+  state.hintDismissed = true;
+  writeHintDismissed();
+  updateHint();
+}
+
+function updateStepCounter(step, total) {
+  if (!els.stepCounter) return;
+  if (step == null || total == null) {
+    els.stepCounter.hidden = true;
+    els.stepCounter.textContent = '';
+    return;
+  }
+  els.stepCounter.hidden = false;
+  els.stepCounter.textContent = `Step ${step} of ${total}`;
+}
+
+function updateTabIndicator() {
+  const indicator = els.tabIndicator;
+  const tab = els.tabs?.querySelector('.systems-tab[aria-selected="true"]');
+  if (!indicator || !tab) {
+    if (indicator) {
+      indicator.style.width = '0px';
+    }
+    return;
+  }
+  indicator.style.width = `${tab.offsetWidth}px`;
+  indicator.style.transform = `translateX(${tab.offsetLeft}px)`;
+}
+
+function clearTrail() {
+  trailLayer?.querySelectorAll('.systems-trail-ghost').forEach((n) => n.remove());
+}
+
 function clearTrace() {
   if (state.traceTimer) {
     clearTimeout(state.traceTimer);
@@ -234,6 +340,11 @@ function clearTrace() {
   const traveler = els.svg?.querySelector('.systems-traveler');
   if (traveler) traveler.setAttribute('visibility', 'hidden');
   els.svg?.querySelectorAll('.is-trace').forEach((n) => n.classList.remove('is-trace'));
+  els.svg?.querySelectorAll('.fx-stamp.is-stamping').forEach((n) => {
+    n.classList.remove('is-stamping');
+  });
+  clearTrail();
+  updateStepCounter(null);
   if (els.traceBtn) {
     els.traceBtn.setAttribute('aria-pressed', 'false');
     els.traceBtn.textContent = 'Trace a request';
@@ -242,7 +353,10 @@ function clearTrace() {
 
 function renderTabs() {
   const list = els.tabs;
+  const indicator = els.tabIndicator;
   list.innerHTML = '';
+  if (indicator) list.appendChild(indicator);
+
   systems.forEach((system, i) => {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -268,6 +382,8 @@ function renderTabs() {
     btn.addEventListener('keydown', (e) => onTabKey(e, i));
     list.appendChild(btn);
   });
+
+  requestAnimationFrame(() => updateTabIndicator());
 }
 
 function onTabKey(e, index) {
@@ -346,7 +462,7 @@ function renderLayers(system) {
       if (input.checked) state.layers.add(layer);
       else state.layers.delete(layer);
       state.layers.add('flow');
-      applyLayerStyles(getSystem(state.systemId));
+      applyLayerStyles(getSystem(state.systemId), { animatePrivacy: true });
     });
     const text = document.createElement('span');
     text.textContent = LAYER_LABELS[layer] || layer;
@@ -358,7 +474,77 @@ function renderLayers(system) {
   wrap.hidden = available.filter((l) => l !== 'flow').length === 0;
 }
 
-function applyLayerStyles(system) {
+function privacyPerimeter(boundary) {
+  if (typeof boundary.getTotalLength === 'function') {
+    try {
+      const len = boundary.getTotalLength();
+      if (len > 0) return len;
+    } catch {
+      /* fall through */
+    }
+  }
+  const w = Number(boundary.getAttribute('width')) || 0;
+  const h = Number(boundary.getAttribute('height')) || 0;
+  return 2 * (w + h);
+}
+
+function drawPrivacyBoundary(boundary, draw) {
+  if (!boundary) return;
+  const reduced = state.reducedMotion || prefersReducedMotion();
+  const len = privacyPerimeter(boundary);
+
+  if (!draw) {
+    boundary.setAttribute('visibility', 'hidden');
+    boundary.classList.remove('is-drawing');
+    boundary.style.strokeDasharray = '';
+    boundary.style.strokeDashoffset = '';
+    boundary.style.transition = '';
+    return;
+  }
+
+  boundary.setAttribute('visibility', 'visible');
+
+  if (reduced || !len) {
+    boundary.classList.remove('is-drawing');
+    boundary.style.strokeDasharray = '6 4';
+    boundary.style.strokeDashoffset = '';
+    boundary.style.transition = '';
+    return;
+  }
+
+  boundary.classList.add('is-drawing');
+  boundary.style.strokeDasharray = `${len}`;
+  boundary.style.strokeDashoffset = `${len}`;
+  boundary.style.transition = 'none';
+  void boundary.getBoundingClientRect();
+  boundary.style.transition = '';
+
+  const finish = (ev) => {
+    if (ev && ev.propertyName && ev.propertyName !== 'stroke-dashoffset') return;
+    boundary.removeEventListener('transitionend', finish);
+    if (!state.layers.has('privacy')) {
+      drawPrivacyBoundary(boundary, false);
+      return;
+    }
+    showPrivacyBoundaryStatic(boundary);
+  };
+  boundary.addEventListener('transitionend', finish);
+
+  requestAnimationFrame(() => {
+    boundary.style.strokeDashoffset = '0';
+  });
+}
+
+function showPrivacyBoundaryStatic(boundary) {
+  if (!boundary) return;
+  boundary.setAttribute('visibility', 'visible');
+  boundary.classList.remove('is-drawing');
+  boundary.style.strokeDasharray = '6 4';
+  boundary.style.strokeDashoffset = '';
+  boundary.style.transition = '';
+}
+
+function applyLayerStyles(system, opts = {}) {
   if (!els.svg) return;
   const privacyOn = state.layers.has('privacy');
   const metricsOn = state.layers.has('metrics');
@@ -387,7 +573,16 @@ function applyLayerStyles(system) {
   });
 
   const boundary = els.svg.querySelector('.systems-privacy-boundary');
-  if (boundary) boundary.setAttribute('visibility', privacyOn ? 'visible' : 'hidden');
+  if (boundary) {
+    if (!privacyOn) {
+      drawPrivacyBoundary(boundary, false);
+    } else if (opts.animatePrivacy || !state.privacyWasOn) {
+      drawPrivacyBoundary(boundary, true);
+    } else {
+      showPrivacyBoundaryStatic(boundary);
+    }
+  }
+  state.privacyWasOn = privacyOn;
 }
 
 function privacyBounds(system) {
@@ -413,9 +608,67 @@ function privacyBounds(system) {
   };
 }
 
+function cornerMarks() {
+  const g = svgEl('g', {
+    class: 'systems-node-corners',
+    'aria-hidden': 'true',
+  });
+  const marks = [
+    `M0 ${CORNER} V0 H${CORNER}`,
+    `M${NODE_W - CORNER} 0 H${NODE_W} V${CORNER}`,
+    `M${NODE_W} ${NODE_H - CORNER} V${NODE_H} H${NODE_W - CORNER}`,
+    `M${CORNER} ${NODE_H} H0 V${NODE_H - CORNER}`,
+  ];
+  marks.forEach((d) => {
+    g.appendChild(svgEl('path', { class: 'systems-node-corner', d }));
+  });
+  return g;
+}
+
+function drawEdgesIn(system) {
+  if (!els.svg) return;
+  const order = edgesDrawOrder(system);
+  const reduced = state.reducedMotion || prefersReducedMotion();
+
+  order.forEach((edge, i) => {
+    const path = els.svg.querySelector(
+      `.systems-edge[data-edge-key="${edgeKey(edge.from, edge.to)}"]`
+    );
+    if (!path) return;
+    let len = 0;
+    try {
+      len = path.getTotalLength();
+    } catch {
+      return;
+    }
+    path.classList.add('is-drawing');
+    path.style.strokeDasharray = `${len}`;
+    if (reduced) {
+      path.style.strokeDashoffset = '0';
+      path.classList.remove('is-drawing');
+      return;
+    }
+    path.style.strokeDashoffset = `${len}`;
+    path.style.transition = 'none';
+    void path.getBoundingClientRect();
+    path.style.transition = `stroke-dashoffset 400ms var(--ease-out) ${i * 50}ms`;
+    requestAnimationFrame(() => {
+      path.style.strokeDashoffset = '0';
+    });
+    const done = (ev) => {
+      if (ev && ev.propertyName && ev.propertyName !== 'stroke-dashoffset') return;
+      path.classList.remove('is-drawing');
+      path.style.transition = '';
+      path.removeEventListener('transitionend', done);
+    };
+    path.addEventListener('transitionend', done);
+  });
+}
+
 function renderSvg(system) {
   const svg = els.svg;
   svg.innerHTML = '';
+  trailLayer = null;
   const { w, h } = viewBoxFor(system);
   svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
   svg.setAttribute('width', String(w));
@@ -465,7 +718,7 @@ function renderSvg(system) {
         y: bounds.y,
         width: bounds.w,
         height: bounds.h,
-        visibility: state.layers.has('privacy') ? 'visible' : 'hidden',
+        visibility: 'hidden',
       })
     );
   }
@@ -503,6 +756,12 @@ function renderSvg(system) {
   });
   svg.appendChild(edgeLayer);
 
+  trailLayer = svgEl('g', {
+    class: 'systems-trail',
+    'aria-hidden': 'true',
+  });
+  svg.appendChild(trailLayer);
+
   const nodeLayer = svgEl('g', { class: 'systems-nodes' });
   system.nodes.forEach((node) => {
     const o = nodeOrigin(node);
@@ -517,7 +776,18 @@ function renderSvg(system) {
     g.setAttribute('aria-label', `${node.label}, ${node.kind}`);
     g.setAttribute('aria-pressed', node.id === state.nodeId ? 'true' : 'false');
 
-    g.appendChild(
+    const tag = svgEl('text', {
+      class: 'systems-node-selected-tag',
+      x: NODE_W / 2,
+      y: -6,
+      'text-anchor': 'middle',
+      'aria-hidden': 'true',
+    });
+    tag.textContent = 'SELECTED';
+    g.appendChild(tag);
+
+    const body = svgEl('g', { class: 'systems-node-body fx-stamp' });
+    body.appendChild(
       svgEl('rect', {
         class: 'systems-node-rect',
         x: 0,
@@ -533,7 +803,7 @@ function renderSvg(system) {
       y: 16,
     });
     kind.textContent = node.kind;
-    g.appendChild(kind);
+    body.appendChild(kind);
 
     const label = svgEl('text', {
       class: 'systems-node-label',
@@ -541,12 +811,17 @@ function renderSvg(system) {
       y: 36,
     });
     label.textContent = node.label;
-    g.appendChild(label);
+    body.appendChild(label);
+    body.appendChild(cornerMarks());
+    g.appendChild(body);
 
     g.addEventListener('click', () => selectNode(node.id));
     g.addEventListener('keydown', (e) => onNodeKey(e, system, node.id));
-    g.addEventListener('mouseenter', () => setHover(node.id));
-    g.addEventListener('mouseleave', () => setHover(null));
+    /* Hover highlight only on fine pointers — avoids sticky :hover after tap. */
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      g.addEventListener('mouseenter', () => setHover(node.id));
+      g.addEventListener('mouseleave', () => setHover(null));
+    }
     g.addEventListener('focus', () => setHover(node.id));
     g.addEventListener('blur', () => {
       if (state.hoverId === node.id) setHover(null);
@@ -556,18 +831,18 @@ function renderSvg(system) {
   });
   svg.appendChild(nodeLayer);
 
-  svg.appendChild(
-    svgEl('circle', {
-      class: 'systems-traveler',
-      r: 3.5,
-      cx: 0,
-      cy: 0,
-      visibility: 'hidden',
-    })
-  );
+  const traveler = svgEl('g', {
+    class: 'systems-traveler',
+    visibility: 'hidden',
+    'aria-hidden': 'true',
+  });
+  traveler.appendChild(svgEl('circle', { r: 3.5, cx: 0, cy: 0 }));
+  svg.appendChild(traveler);
 
+  state.privacyWasOn = false;
   applySelectionStyles(system);
   applyLayerStyles(system);
+  requestAnimationFrame(() => drawEdgesIn(system));
 }
 
 function setHover(nodeId) {
@@ -584,6 +859,8 @@ function applySelectionStyles(system) {
   const { up, down } = focusId
     ? upstreamDownstream(system, focusId)
     : { up: new Set(), down: new Set() };
+
+  els.svg?.classList.toggle('has-selection', Boolean(selected));
 
   els.svg?.querySelectorAll('[data-node-id]').forEach((g) => {
     const id = g.getAttribute('data-node-id');
@@ -671,9 +948,30 @@ function onNodeKey(e, system, nodeId) {
   g?.focus();
 }
 
-function renderAnnotation(system, node) {
-  const panel = els.annotation;
+/** Build What/Why/Trade-off/Metric rows; unpublished Why/Trade-off stay visible. */
+function annotationRows(node) {
+  const rows = [
+    { key: 'What', value: node.what, required: false },
+    { key: 'Why', value: node.why, required: true },
+    { key: 'Trade-off', value: node.tradeoff, required: true },
+    { key: 'Metric', value: node.metric, required: false },
+  ];
+  return rows
+    .map((row) => {
+      if (row.value != null && row.value !== '') {
+        return { key: row.key, value: row.value };
+      }
+      if (row.required) {
+        return { key: row.key, value: 'Not published' };
+      }
+      return null;
+    })
+    .filter(Boolean);
+}
+
+function paintAnnotation(panel, node) {
   panel.innerHTML = '';
+  panel.classList.remove('is-ready', 'is-fading');
 
   if (!node) {
     const empty = document.createElement('p');
@@ -697,19 +995,15 @@ function renderAnnotation(system, node) {
   head.appendChild(kind);
   panel.appendChild(head);
 
-  const rows = [
-    { key: 'What', value: node.what },
-    { key: 'Why', value: node.why },
-    { key: 'Trade-off', value: node.tradeoff },
-    { key: 'Metric', value: node.metric },
-  ];
-
-  rows.forEach((row) => {
-    if (row.value == null || row.value === '') return;
+  annotationRows(node).forEach((row, i) => {
     const dl = document.createElement('div');
     dl.className = 'systems-annotation-row';
+    dl.style.setProperty('--i', String(i));
     const dt = document.createElement('p');
     dt.className = 'systems-annotation-key';
+    if (row.key === 'Trade-off') {
+      dt.classList.add('fx-marker');
+    }
     dt.textContent = row.key;
     const dd = document.createElement('p');
     dd.className = 'systems-annotation-value';
@@ -718,6 +1012,49 @@ function renderAnnotation(system, node) {
     dl.appendChild(dd);
     panel.appendChild(dl);
   });
+}
+
+function renderAnnotation(system, node) {
+  const panel = els.annotation;
+  if (!panel) return;
+
+  if (state.annotationTimer) {
+    clearTimeout(state.annotationTimer);
+    state.annotationTimer = null;
+  }
+
+  const reduced = state.reducedMotion || prefersReducedMotion();
+  const reveal = () => {
+    if (reduced) {
+      panel.classList.remove('is-fading');
+      panel.querySelectorAll('.fx-marker').forEach((el) => el.classList.add('is-in'));
+      return;
+    }
+    panel.classList.add('is-ready');
+    requestAnimationFrame(() => {
+      panel.classList.remove('is-fading');
+      panel.querySelectorAll('.fx-marker').forEach((el) => el.classList.add('is-in'));
+    });
+  };
+
+  const swap = () => {
+    paintAnnotation(panel, node);
+    if (!reduced) panel.classList.add('is-fading');
+    void panel.offsetWidth;
+    reveal();
+  };
+
+  if (reduced || !panel.childElementCount) {
+    paintAnnotation(panel, node);
+    reveal();
+    return;
+  }
+
+  panel.classList.add('is-fading');
+  state.annotationTimer = setTimeout(() => {
+    state.annotationTimer = null;
+    swap();
+  }, ANNOTATION_FADE_MS);
 }
 
 function renderCaption(system) {
@@ -755,16 +1092,12 @@ function renderStepper(system) {
     body.className = 'systems-step-body';
     body.hidden = node.id !== state.nodeId;
 
-    const rows = [
-      { key: 'What', value: node.what },
-      { key: 'Why', value: node.why },
-      { key: 'Trade-off', value: node.tradeoff },
-      { key: 'Metric', value: node.metric },
-    ];
-    rows.forEach((row) => {
-      if (row.value == null || row.value === '') return;
+    annotationRows(node).forEach((row) => {
       const p = document.createElement('p');
       const strong = document.createElement('strong');
+      if (row.key === 'Trade-off') {
+        strong.className = 'fx-marker is-in';
+      }
       strong.textContent = `${row.key}. `;
       p.appendChild(strong);
       p.appendChild(document.createTextNode(row.value));
@@ -797,7 +1130,9 @@ function updateMode() {
     els.stepper.setAttribute('aria-hidden', 'true');
   }
   els.toolbar.classList.toggle('is-mobile', mobile);
+  updateHint();
   if (mobile) clearTrace();
+  requestAnimationFrame(() => updateTabIndicator());
 }
 
 function selectSystem(systemId, nodeId) {
@@ -805,6 +1140,7 @@ function selectSystem(systemId, nodeId) {
   const system = getSystem(systemId);
   state.systemId = system.id;
   state.layers = new Set(['flow']);
+  state.privacyWasOn = false;
 
   const available = usedLayers(system);
   available.forEach((l) => {
@@ -819,17 +1155,26 @@ function selectSystem(systemId, nodeId) {
   renderStepper(system);
   updateMode();
 
-  const target =
-    (nodeId && getNode(system, nodeId)?.id) ||
-    system.nodes[0]?.id ||
-    null;
-  selectNode(target, { skipHash: false, fromSystem: true });
+  const target = nodeId && getNode(system, nodeId) ? nodeId : null;
+  if (target) {
+    selectNode(target, { skipHash: false, fromSystem: true });
+  } else {
+    state.nodeId = null;
+    renderAnnotation(system, null);
+    applySelectionStyles(system);
+    renderStepper(system);
+    writeHash(system.id, null);
+    updateHint();
+  }
 }
 
 function selectNode(nodeId, opts = {}) {
   const system = getSystem(state.systemId);
   const node = nodeId ? getNode(system, nodeId) : null;
   state.nodeId = node?.id || null;
+
+  if (state.nodeId) dismissHint();
+  else updateHint();
 
   renderAnnotation(system, node);
   applySelectionStyles(system);
@@ -838,20 +1183,57 @@ function selectNode(nodeId, opts = {}) {
   if (!opts.skipHash) writeHash(system.id, state.nodeId);
 }
 
-function pointAlongPath(path, t) {
-  const len = path.getTotalLength();
-  return path.getPointAtLength(len * t);
+function setTravelerAt(x, y) {
+  const traveler = els.svg?.querySelector('.systems-traveler');
+  if (!traveler) return null;
+  traveler.setAttribute('visibility', 'visible');
+  traveler.setAttribute('transform', `translate(${x} ${y})`);
+  return traveler;
+}
+
+function spawnTrailGhost(x, y) {
+  if (!trailLayer || state.reducedMotion) return;
+  const ghost = svgEl('circle', {
+    class: 'systems-trail-ghost',
+    r: 2.5,
+    cx: 0,
+    cy: 0,
+    transform: `translate(${x} ${y})`,
+  });
+  trailLayer.appendChild(ghost);
+  requestAnimationFrame(() => ghost.classList.add('is-fading'));
+  setTimeout(() => ghost.remove(), 300);
+  while (trailLayer.childElementCount > 12) {
+    trailLayer.firstElementChild?.remove();
+  }
+}
+
+function stampNode(id) {
+  const body = els.svg?.querySelector(
+    `[data-node-id="${id}"] .systems-node-body`
+  );
+  if (!body || state.reducedMotion || prefersReducedMotion()) return;
+  body.classList.remove('is-stamping');
+  void body.getBoundingClientRect();
+  body.classList.add('is-stamping');
+  const onEnd = () => {
+    body.classList.remove('is-stamping');
+    body.removeEventListener('animationend', onEnd);
+  };
+  body.addEventListener('animationend', onEnd);
 }
 
 function animateAlong(path, duration) {
   return new Promise((resolve) => {
-    const traveler = els.svg.querySelector('.systems-traveler');
+    const traveler = els.svg?.querySelector('.systems-traveler');
     if (!traveler) {
       resolve();
       return;
     }
     traveler.setAttribute('visibility', 'visible');
+    const len = path.getTotalLength();
     const start = performance.now();
+    let lastGhost = 0;
 
     function frame(now) {
       if (!state.tracing) {
@@ -860,9 +1242,12 @@ function animateAlong(path, duration) {
       }
       const t = Math.min(1, (now - start) / duration);
       const eased = 1 - Math.pow(1 - t, 2);
-      const pt = pointAlongPath(path, eased);
-      traveler.setAttribute('cx', String(pt.x));
-      traveler.setAttribute('cy', String(pt.y));
+      const pt = path.getPointAtLength(len * eased);
+      traveler.setAttribute('transform', `translate(${pt.x} ${pt.y})`);
+      if (now - lastGhost > 36) {
+        spawnTrailGhost(pt.x, pt.y);
+        lastGhost = now;
+      }
       if (t < 1) requestAnimationFrame(frame);
       else resolve();
     }
@@ -898,11 +1283,14 @@ async function runTrace() {
   els.traceBtn.textContent = 'Stop trace';
 
   const { nodes, edges } = flowOrder(system);
-  const reduced = prefersReducedMotion() || isMobile();
+  const total = nodes.length;
+  const reduced = prefersReducedMotion() || isMobile() || state.reducedMotion;
 
   if (reduced) {
-    for (const id of nodes) {
+    for (let i = 0; i < nodes.length; i += 1) {
       if (!state.tracing) break;
+      const id = nodes[i];
+      updateStepCounter(i + 1, total);
       highlightTraceNode(id);
       selectNode(id);
       await wait(450);
@@ -911,14 +1299,13 @@ async function runTrace() {
     return;
   }
 
-  const traveler = els.svg.querySelector('.systems-traveler');
   if (nodes[0]) {
     const n = getNode(system, nodes[0]);
     const c = nodeCenter(n);
-    traveler.setAttribute('cx', String(c.x));
-    traveler.setAttribute('cy', String(c.y));
-    traveler.setAttribute('visibility', 'visible');
+    setTravelerAt(c.x, c.y);
+    updateStepCounter(1, total);
     highlightTraceNode(nodes[0]);
+    stampNode(nodes[0]);
     selectNode(nodes[0]);
     await wait(280);
   }
@@ -931,7 +1318,10 @@ async function runTrace() {
     if (!path) continue;
     path.classList.add('is-trace');
     await animateAlong(path, 520);
+    const stepIndex = nodes.indexOf(edge.to);
+    updateStepCounter(stepIndex >= 0 ? stepIndex + 1 : null, total);
     highlightTraceNode(edge.to);
+    stampNode(edge.to);
     selectNode(edge.to);
     await wait(320);
     path.classList.remove('is-trace');
@@ -951,6 +1341,8 @@ function syncFromHash() {
     selectSystem(system.id, parsed.nodeId);
   } else if (parsed.nodeId && parsed.nodeId !== state.nodeId) {
     selectNode(parsed.nodeId);
+  } else if (!parsed.nodeId && state.nodeId) {
+    selectNode(null);
   }
 }
 
@@ -963,6 +1355,10 @@ function bind() {
     const parsed = parseHash();
     if (!parsed) return;
     syncFromHash();
+  });
+
+  window.addEventListener('resize', () => {
+    updateTabIndicator();
   });
 
   mqMobile = window.matchMedia(MOBILE_MQ);
@@ -983,6 +1379,7 @@ export function initSystems() {
 
   els = {
     root,
+    figure: root.querySelector('.systems-figure'),
     tabs: document.getElementById('systemsTabs'),
     meta: document.getElementById('systemsMeta'),
     toolbar: document.getElementById('systemsToolbar'),
@@ -997,6 +1394,8 @@ export function initSystems() {
 
   if (!els.tabs || !els.svg || !els.annotation) return;
 
+  state.hintDismissed = readHintDismissed();
+  ensureChrome();
   bind();
   state.reducedMotion = prefersReducedMotion();
 

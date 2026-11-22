@@ -16,10 +16,41 @@ function fallbackCopy(text) {
 
 async function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(text);
-    return;
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch (err) {
+      /* Permission or focus can reject Clipboard API; use legacy path. */
+    }
   }
   fallbackCopy(text);
+}
+
+function armBand(band) {
+  if (!band) return;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (reduce.matches || !('IntersectionObserver' in window)) {
+    band.classList.add('is-in');
+    return;
+  }
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        band.classList.add('is-in');
+        io.unobserve(band);
+      });
+    },
+    { threshold: 0.08, rootMargin: '0px 0px -24px 0px' }
+  );
+  io.observe(band);
+  const onReduce = () => {
+    if (!reduce.matches) return;
+    band.classList.add('is-in');
+    io.disconnect();
+  };
+  if (reduce.addEventListener) reduce.addEventListener('change', onReduce);
+  else reduce.addListener(onReduce);
 }
 
 export function initContact() {
@@ -28,23 +59,28 @@ export function initContact() {
     year.textContent = String(new Date().getFullYear());
   }
 
+  armBand(document.getElementById('contact'));
+
   const copyBtn = document.querySelector('.contact-copy');
   const live = document.getElementById('copyStatus');
-  if (!copyBtn) return;
+  const label = copyBtn?.querySelector('.contact-copy-label');
+  if (!copyBtn || !label) return;
 
   const email =
     copyBtn.getAttribute('data-copy-email') || 'abhisriram15@gmail.com';
-  const idleLabel = copyBtn.textContent.trim() || 'Copy';
+  const idleLabel = label.textContent.trim() || 'Copy';
   let revertTimer = 0;
 
   copyBtn.addEventListener('click', async () => {
     try {
       await copyText(email);
-      copyBtn.textContent = 'Copied';
+      label.textContent = 'Copied';
+      copyBtn.classList.add('is-copied');
       if (live) live.textContent = 'Copied';
       window.clearTimeout(revertTimer);
       revertTimer = window.setTimeout(() => {
-        copyBtn.textContent = idleLabel;
+        label.textContent = idleLabel;
+        copyBtn.classList.remove('is-copied');
         if (live) live.textContent = '';
       }, 2000);
     } catch (err) {

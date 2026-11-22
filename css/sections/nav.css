@@ -47,6 +47,23 @@ html {
   border-bottom: 1px solid var(--rule);
 }
 
+.nav::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-duration) var(--ease-out);
+}
+
+.nav[data-scrolled="true"]::after {
+  opacity: 0.28;
+}
+
 .nav-inner {
   width: min(100%, var(--page-max));
   height: var(--nav-h);
@@ -55,6 +72,7 @@ html {
   display: flex;
   align-items: center;
   gap: var(--space-16);
+  min-width: 0;
 }
 
 .nav-brand {
@@ -65,8 +83,9 @@ html {
   min-width: 0;
   text-decoration: none;
   color: var(--ink);
-  flex-shrink: 0;
+  flex-shrink: 1;
   line-height: 1.15;
+  max-width: 12rem;
 }
 
 .nav-wordmark {
@@ -74,6 +93,31 @@ html {
   font-weight: 500;
   font-size: 1rem;
   letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-top: 2px;
+  margin-top: -2px;
+}
+
+.nav-wordmark-dot {
+  display: inline-block;
+  color: inherit;
+  transition:
+    color var(--motion-duration) var(--ease-out),
+    transform var(--motion-duration) var(--ease-out);
+}
+
+.nav-brand:focus-visible .nav-wordmark-dot {
+  color: var(--signal);
+  transform: translateY(-2px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-brand:hover .nav-wordmark-dot {
+    color: var(--signal);
+    transform: translateY(-2px);
+  }
 }
 
 .nav-tagline {
@@ -108,8 +152,15 @@ html {
   cursor: pointer;
 }
 
-.nav-theme:hover {
-  border-color: var(--rule);
+.nav-theme:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: var(--space-4);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-theme:hover {
+    border-color: var(--rule);
+  }
 }
 
 .nav-theme svg {
@@ -161,6 +212,11 @@ html {
   cursor: pointer;
 }
 
+.nav-toggle:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: var(--space-4);
+}
+
 .nav-toggle-bars {
   display: flex;
   flex-direction: column;
@@ -193,9 +249,11 @@ html {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: var(--space-16);
+  gap: var(--space-12);
   margin: 0 0 0 auto;
   padding: 0;
+  min-width: 0;
+  flex-wrap: nowrap;
 }
 
 .nav-links a {
@@ -209,7 +267,7 @@ html {
   transition: color var(--motion-fast) var(--ease-out);
 }
 
-.nav-links a:hover {
+.nav-links a:focus-visible {
   color: var(--ink);
 }
 
@@ -220,18 +278,21 @@ html {
   margin-right: var(--space-4);
 }
 
-.nav-links a[aria-current="true"] {
+@media (hover: hover) and (pointer: fine) {
+  .nav-links a:hover {
+    color: var(--ink);
+  }
+}
+
+.nav-links a[aria-current="true"],
+.nav-links a[aria-current="location"] {
   color: var(--ink);
 }
 
-.nav-links a[aria-current="true"]::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -4px;
-  height: 1px;
-  background: var(--signal);
+/* Active section keeps the underline drawn. */
+.nav-links a.fx-underline[aria-current="true"],
+.nav-links a.fx-underline[aria-current="location"] {
+  background-size: 100% 1px;
 }
 
 .nav-links a.nav-contact {
@@ -240,11 +301,13 @@ html {
   font-size: 0.8125rem;
 }
 
-.nav-links a.nav-contact::after {
-  display: none;
+.nav-links a.nav-contact:hover,
+.nav-links a.nav-contact:focus-visible {
+  transform: none;
 }
 
-.nav-links a.nav-contact[aria-current="true"] {
+.nav-links a.nav-contact[aria-current="true"],
+.nav-links a.nav-contact[aria-current="location"] {
   border-color: var(--signal);
 }
 
@@ -253,7 +316,7 @@ html {
   left: 0;
   right: 0;
   bottom: -1px;
-  height: 2px;
+  height: 1px;
   background: var(--signal);
   transform-origin: left center;
   transform: scaleX(0);
@@ -265,7 +328,71 @@ html {
   display: none;
 }
 
-@media (max-width: 860px) {
+/* Fixed scroll-to-top — journal chrome, no shadow / glass. */
+.scroll-top {
+  position: fixed;
+  right: var(--space-24);
+  bottom: var(--space-24);
+  z-index: 90;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(var(--rise));
+  pointer-events: none;
+  transition:
+    opacity var(--motion-duration) var(--ease-out),
+    transform var(--motion-duration) var(--ease-out),
+    background-color var(--motion-duration) var(--ease-out),
+    color var(--motion-duration) var(--ease-out);
+}
+
+.scroll-top.is-visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.scroll-top:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+  outline: 2px solid var(--signal);
+  outline-offset: var(--space-4);
+}
+
+.scroll-top span {
+  display: inline-block;
+  transition: transform var(--motion-duration) var(--ease-out);
+}
+
+.scroll-top:focus-visible span {
+  transform: translateY(-2px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .scroll-top:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .scroll-top:hover span {
+    transform: translateY(-2px);
+  }
+}
+
+/* Collapse earlier so 1024px laptop never overlaps brand + links. */
+@media (max-width: 1100px) {
   .nav-toggle {
     display: inline-flex;
   }
@@ -278,6 +405,7 @@ html {
   .nav-brand {
     flex: 1;
     min-width: 0;
+    max-width: none;
   }
 
   .nav-tools {
@@ -286,16 +414,27 @@ html {
   }
 
   .nav-links {
-    display: none;
-    order: 3;
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-16);
+    order: 3;
     width: 100%;
     margin-left: 0;
-    padding: var(--space-16) 0 var(--space-24);
-    border-top: 1px solid var(--rule);
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+    border-top: 1px solid transparent;
     background: var(--paper);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      max-height var(--motion-slow) var(--ease-out),
+      opacity var(--motion-duration) var(--ease-out),
+      visibility var(--motion-duration) var(--ease-out),
+      border-color var(--motion-duration) var(--ease-out),
+      padding var(--motion-duration) var(--ease-out);
   }
 
   .nav[data-open="true"] {
@@ -303,22 +442,91 @@ html {
   }
 
   .nav[data-open="true"] .nav-links {
-    display: flex;
+    max-height: 28rem;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    border-top-color: var(--rule);
+    padding: var(--space-16) 0 var(--space-24);
   }
 
-  .nav-links a[aria-current="true"]::after {
-    bottom: -2px;
+  .nav-links a {
+    opacity: 0;
+    transform: translateY(var(--rise));
+    transition:
+      color var(--motion-fast) var(--ease-out),
+      opacity var(--motion-duration) var(--ease-out),
+      transform var(--motion-duration) var(--ease-out);
   }
+
+  .nav[data-open="true"] .nav-links a {
+    opacity: 1;
+    transform: none;
+  }
+
+  .nav[data-open="true"] .nav-links a:nth-child(1) { transition-delay: 40ms; }
+  .nav[data-open="true"] .nav-links a:nth-child(2) { transition-delay: 70ms; }
+  .nav[data-open="true"] .nav-links a:nth-child(3) { transition-delay: 100ms; }
+  .nav[data-open="true"] .nav-links a:nth-child(4) { transition-delay: 130ms; }
+  .nav[data-open="true"] .nav-links a:nth-child(5) { transition-delay: 160ms; }
+  .nav[data-open="true"] .nav-links a:nth-child(6) { transition-delay: 190ms; }
+  .nav[data-open="true"] .nav-links a:nth-child(7) { transition-delay: 220ms; }
 
   .nav-links a.nav-contact {
     margin-top: var(--space-8);
+  }
+
+  .scroll-top {
+    right: var(--space-16);
+    bottom: var(--space-16);
+  }
+}
+
+@media (max-width: 390px) {
+  .nav-inner {
+    padding-inline: var(--space-16);
+    gap: var(--space-8);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .skip-link,
+  .nav::after,
+  .nav-links,
   .nav-links a,
-  .nav-toggle-bars span {
+  .nav-wordmark-dot,
+  .nav-toggle-bars span,
+  .scroll-top,
+  .scroll-top span {
     transition: none;
+  }
+
+  .nav-links a {
+    transform: none;
+    opacity: 1;
+  }
+
+  .nav-wordmark-dot,
+  .nav-brand:focus-visible .nav-wordmark-dot {
+    transform: none;
+  }
+
+  .scroll-top,
+  .scroll-top.is-visible {
+    transform: none;
+  }
+
+  .scroll-top:focus-visible span {
+    transform: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .nav-brand:hover .nav-wordmark-dot {
+      transform: none;
+    }
+
+    .scroll-top:hover span {
+      transform: none;
+    }
   }
 }

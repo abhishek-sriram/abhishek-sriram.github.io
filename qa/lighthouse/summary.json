@@ -1,0 +1,26 @@
+{
+  "desktop": {
+    "performance": 99,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcp": 688.2189379825019,
+    "lcpDisplay": "0.7 s",
+    "cls": 0.009758611150656469,
+    "clsDisplay": "0.01",
+    "tbt": 0,
+    "tbtDisplay": "0 ms"
+  },
+  "mobile": {
+    "performance": 89,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcp": 2815.56475,
+    "lcpDisplay": "2.8 s",
+    "cls": 0,
+    "clsDisplay": "0",
+    "tbt": 153,
+    "tbtDisplay": "150 ms"
+  }
+}

@@ -53,10 +53,17 @@
   background: transparent;
   color: var(--ink);
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
   cursor: pointer;
   box-shadow: none;
-  transition: opacity var(--motion-duration) var(--ease-out);
+  transition:
+    color var(--motion-duration) var(--ease-out),
+    background-color var(--motion-duration) var(--ease-out),
+    border-color var(--motion-duration) var(--ease-out),
+    opacity var(--motion-duration) var(--ease-out),
+    transform var(--motion-duration) var(--ease-out);
 }
 
 .btn-primary {
@@ -64,16 +71,44 @@
   color: var(--paper);
 }
 
-.btn:hover,
-.btn-primary:hover {
-  opacity: 0.82;
-  transform: none;
-  box-shadow: none;
+.btn-primary::after {
+  content: "\2192";
+  display: inline-block;
+  transition: transform var(--motion-duration) var(--ease-out);
 }
 
-.btn-primary:hover {
-  background: var(--ink);
-  color: var(--paper);
+.btn:active {
+  transform: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: var(--space-4);
+}
+
+.btn-primary:focus-visible::after {
+  transform: translateX(4px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+    opacity: 1;
+    transform: translateY(-2px);
+    box-shadow: none;
+  }
+
+  .btn-primary:hover {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--ink);
+    opacity: 1;
+  }
+
+  .btn-primary:hover::after {
+    transform: translateX(4px);
+  }
 }
 
 .link-arrow {
@@ -82,16 +117,32 @@
   text-decoration: underline;
   text-underline-offset: 0.18em;
   text-decoration-thickness: 1px;
+  transition: color var(--motion-duration) var(--ease-out);
 }
 
 .link-arrow::after {
   content: "\00a0\2192";
   text-decoration: none;
   display: inline-block;
+  transition: transform var(--motion-duration) var(--ease-out);
 }
 
-.link-arrow:hover {
+.link-arrow:focus-visible {
   color: var(--signal);
+}
+
+.link-arrow:focus-visible::after {
+  transform: translateX(4px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link-arrow:hover {
+    color: var(--signal);
+  }
+
+  .link-arrow:hover::after {
+    transform: translateX(4px);
+  }
 }
 
 .tag {
@@ -104,9 +155,82 @@
 .tag::before { content: "["; }
 .tag::after { content: "]"; }
 
+/* Shared once-on-enter reveal (wired by js/modules/reveal.js).
+   Failsafe animation restores visibility if modules never mark .is-in. */
+@keyframes reveal-failsafe {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.js .reveal {
+  opacity: 0;
+  transform: translateY(var(--rise));
+  transition:
+    opacity var(--motion-slow) var(--ease-out),
+    transform var(--motion-slow) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+  animation: reveal-failsafe 0s linear 3s forwards;
+}
+
+.js .reveal.is-in,
+.js .reveal:focus-within {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+.systems-header .reveal:nth-child(1),
+.about-header .reveal:nth-child(1),
+.toolkit-header .reveal:nth-child(1),
+.experience-header .reveal:nth-child(1),
+.projects-header .reveal:nth-child(1),
+.credentials-header .reveal:nth-child(1),
+.contact-header .reveal:nth-child(1) {
+  --reveal-delay: 0ms;
+}
+
+.systems-header .reveal:nth-child(2),
+.about-header .reveal:nth-child(2),
+.toolkit-header .reveal:nth-child(2),
+.experience-header .reveal:nth-child(2),
+.projects-header .reveal:nth-child(2),
+.credentials-header .reveal:nth-child(2),
+.contact-header .reveal:nth-child(2) {
+  --reveal-delay: 60ms;
+}
+
+.systems-header .reveal:nth-child(3),
+.contact-header .reveal:nth-child(3) {
+  --reveal-delay: 120ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btn,
+  .btn-primary::after,
+  .link-arrow,
   .link-arrow::after {
+    transition: none;
+  }
+
+  .btn:active,
+  .btn-primary:focus-visible::after,
+  .link-arrow:focus-visible::after {
+    transform: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover,
+    .btn-primary:hover::after,
+    .link-arrow:hover::after {
+      transform: none;
+    }
+  }
+
+  .js .reveal {
+    opacity: 1;
+    transform: none;
     transition: none;
   }
 }

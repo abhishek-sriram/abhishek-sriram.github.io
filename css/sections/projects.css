@@ -4,6 +4,7 @@
   padding: var(--space-64) var(--space-24) var(--space-96);
   background: var(--paper);
   border-bottom: 0;
+  overflow-x: clip;
 }
 
 .projects-inner {
@@ -32,6 +33,38 @@
   display: grid;
   gap: var(--space-32);
   min-width: 0;
+  position: relative;
+  padding: var(--space-32) var(--space-16) var(--space-24);
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.case-file--featured {
+  border-color: color-mix(in srgb, var(--signal) 35%, var(--rule));
+  background: color-mix(in srgb, var(--paper-2) 55%, transparent);
+}
+
+/* Registration marks follow .fx-corners — hover / focus-within only. */
+.case-file--featured.fx-corners::before,
+.case-file--featured.fx-corners::after {
+  transition:
+    opacity var(--motion-duration) var(--ease-out),
+    transform var(--motion-slow) var(--ease-out);
+}
+
+.case-fig {
+  position: absolute;
+  top: var(--space-12);
+  left: var(--space-16);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  opacity: 0.45;
+  pointer-events: none;
+  line-height: 1;
 }
 
 .case-kicker {
@@ -195,25 +228,34 @@
   color: var(--ink-3);
 }
 
-.case-table tbody th::after,
-.case-table tbody td::after {
+.case-table tbody tr {
+  position: relative;
+}
+
+/* Signal bar: grows scaleY 0 → 1 from the left edge. */
+.case-table tbody tr::before {
   content: "";
   position: absolute;
   left: 0;
-  right: 0;
-  bottom: -1px;
-  height: var(--space-8);
-  background: var(--marker);
-  opacity: 0;
+  top: var(--space-16);
+  bottom: var(--space-16);
+  width: 2px;
+  background: var(--signal);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform var(--motion-duration) var(--ease-out);
   pointer-events: none;
-  transition: opacity var(--motion-duration) var(--ease-out);
+  z-index: 1;
 }
 
-.case-table tbody tr:hover th::after,
-.case-table tbody tr:hover td::after,
-.case-table tbody tr:focus-within th::after,
-.case-table tbody tr:focus-within td::after {
-  opacity: 1;
+.case-table tbody tr:focus-within::before {
+  transform: scaleY(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .case-table tbody tr:hover::before {
+    transform: scaleY(1);
+  }
 }
 
 .index-title,
@@ -227,6 +269,7 @@
   font-size: 1.0625rem;
   line-height: 1.3;
   color: var(--ink);
+  transition: transform var(--motion-duration) var(--ease-out);
 }
 
 .index-desc {
@@ -234,6 +277,32 @@
   font-family: var(--font-serif);
   font-size: 0.9375rem;
   line-height: 1.5;
+  /* Touch / coarse: full ink-2 by default — no hover-only information. */
+  color: var(--ink-2);
+  transition: color var(--motion-duration) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .index-desc {
+    color: var(--ink-3);
+  }
+
+  .case-table tbody tr:hover .index-title,
+  .case-table tbody tr:focus-within .index-title {
+    transform: translateX(4px);
+  }
+
+  .case-table tbody tr:hover .index-desc,
+  .case-table tbody tr:focus-within .index-desc {
+    color: var(--ink-2);
+  }
+}
+
+.case-table tbody tr:focus-within .index-title {
+  transform: translateX(4px);
+}
+
+.case-table tbody tr:focus-within .index-desc {
   color: var(--ink-2);
 }
 
@@ -261,17 +330,18 @@
   white-space: nowrap;
 }
 
+/* ----- Earlier ML work (details) -------------------------------------- */
+
 .case-earlier {
   margin: 0;
 }
 
-/* Author display beats the user-agent details rule, so close it explicitly. */
-.case-earlier:not([open]) > .case-table {
-  display: none;
-}
-
 .case-earlier summary {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
   padding: var(--space-16) 0;
   font-family: var(--font-mono);
   font-size: 0.875rem;
@@ -279,28 +349,53 @@
   color: var(--ink);
   cursor: pointer;
   border-bottom: 1px solid var(--rule);
+  list-style: none;
+}
+
+.case-earlier summary::-webkit-details-marker {
+  display: none;
 }
 
 .case-earlier summary::marker {
-  color: var(--ink-3);
-}
-
-.case-earlier summary::after {
   content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: var(--space-8);
-  background: var(--marker);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--motion-duration) var(--ease-out);
 }
 
-.case-earlier summary:hover::after,
-.case-earlier summary:focus-visible::after {
-  opacity: 1;
+.case-earlier-chevron {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 1px solid var(--ink-3);
+  border-bottom: 1px solid var(--ink-3);
+  transform: rotate(45deg);
+  transform-origin: center;
+  transition: transform var(--motion-duration) var(--ease-out);
+}
+
+.case-earlier[open] .case-earlier-chevron,
+.case-earlier.is-open .case-earlier-chevron {
+  transform: rotate(225deg);
+}
+
+.case-earlier-panel {
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--motion-slow) var(--ease-out);
+}
+
+/* Override UA display:none only while open or animating closed. */
+.case-earlier[open] > .case-earlier-panel,
+.case-earlier.is-open > .case-earlier-panel {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.case-earlier.is-closing > .case-earlier-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+}
+
+.case-earlier-clip {
+  overflow: hidden;
+  min-height: 0;
 }
 
 .case-earlier .case-table {
@@ -326,6 +421,13 @@
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: var(--space-24);
     row-gap: 0;
+    padding-left: var(--space-48);
+  }
+
+  .case-fig {
+    left: var(--space-8);
+    top: var(--space-24);
+    white-space: nowrap;
   }
 
   .case-file-main {
@@ -336,8 +438,10 @@
   .case-file-spec {
     grid-column: 8 / -1;
     min-width: 0;
-    padding-left: var(--space-24);
+    padding: var(--space-16) 0 var(--space-16) var(--space-24);
     border-left: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--paper-2) 70%, transparent);
+    border-radius: var(--radius);
   }
 
   .case-specs > div {
@@ -377,12 +481,7 @@
   .case-table tbody th,
   .case-table tbody td {
     border-bottom: 0;
-    padding: var(--space-8) 0;
-  }
-
-  .case-table tbody th::after,
-  .case-table tbody td::after {
-    content: none;
+    padding: var(--space-8) 0 var(--space-8) var(--space-12);
   }
 
   .case-table tbody th[scope="row"]::before,
@@ -401,26 +500,14 @@
   .case-table tbody tr {
     position: relative;
     padding-bottom: var(--space-8);
+    padding-left: var(--space-4);
     margin-bottom: var(--space-16);
     border-bottom: 1px solid var(--rule);
   }
 
-  .case-table tbody tr::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: var(--space-8);
-    background: var(--marker);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--motion-duration) var(--ease-out);
-  }
-
-  .case-table tbody tr:hover::after,
-  .case-table tbody tr:focus-within::after {
-    opacity: 1;
+  .case-table tbody tr::before {
+    top: 0;
+    bottom: var(--space-8);
   }
 
   .case-table .link-arrow {
@@ -428,17 +515,41 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 390px) {
   .projects {
     padding-inline: var(--space-16);
+    padding-block: var(--space-48) var(--space-64);
+  }
+
+  .case-file {
+    padding-left: var(--space-12);
+    padding-right: var(--space-12);
+  }
+
+  .case-pull {
+    max-width: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .case-table tbody th::after,
-  .case-table tbody td::after,
-  .case-table tbody tr::after,
-  .case-earlier summary::after {
+  .case-file--featured.fx-corners::before,
+  .case-file--featured.fx-corners::after,
+  .case-table tbody tr::before,
+  .index-title,
+  .index-desc,
+  .case-earlier-chevron,
+  .case-earlier-panel {
     transition: none;
+  }
+
+  .case-file--featured.fx-corners::before,
+  .case-file--featured.fx-corners::after {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .case-earlier[open] .case-earlier-panel,
+  .case-earlier.is-open .case-earlier-panel {
+    grid-template-rows: 1fr;
   }
 }

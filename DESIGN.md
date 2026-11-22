@@ -75,9 +75,30 @@ Vertical margin rules, 1px at 8% ink, sit on the left and right edges of that 12
 
 `.section` opens with the same double rule.
 
-## Motion
+## Motion and effects
 
-150–250ms, `ease-out`. Animate opacity and `translateY(8px)` only. Honor `prefers-reduced-motion` on every transition and animation, including JS that tracks the pointer.
+The earlier ban on hover-lift and box-shadow is withdrawn. What replaces it: motion stays inside a printed journal — ink, paper, and marker only. Primitives live in `css/effects.css` and `js/modules/effects.js`. Later sections apply these classes. They do not invent a second kind of motion.
+
+Duration is 150–300ms, `ease-out`. Reveals may run up to 500ms. Animate `transform` and `opacity` only, plus `background-size` on the underline and the marker. Honor `prefers-reduced-motion`: reveals and count-ups show their final state immediately, and nothing sweeps or draws. Hover motion is allowed only inside `@media (hover: hover) and (pointer: fine)`. `:focus-visible` gets the same state for keyboard users. `.fx-corners` and `.fx-press` also respond to `:focus-within`.
+
+An inline script in `<head>` adds `class="js"` on `<html>` before first paint. Hidden entrance states exist only under `.js`, so the page is fully visible with JavaScript disabled.
+
+| Class | Behaviour |
+|---|---|
+| `.fx-reveal` | Direct children enter once on scroll: opacity 0→1 and `translateY(8px)`→0. Stagger is `60ms` via `--i`, capped at 8 children. |
+| `.fx-underline` | Link underline wipes left to right on hover and focus. Ink by default; `.fx-underline--signal` uses `--signal`. |
+| `.fx-marker` | A marker streak sweeps behind a phrase on enter or hover. `mix-blend-mode: multiply` on paper. Night edition uses `screen` with the mark at lower opacity. |
+| `.fx-corners` | Four registration marks (1px rules, 10px legs) draw in on hover and focus-within. Uses `::before` and `::after`. |
+| `.fx-press` | Lifts 2px, border shifts from `--rule` to `--ink`, and a 1px `--signal` rule draws along the top edge. No box-shadow. Uses `::before`. |
+| `.fx-count` | The numeral counts from 0 once, over 900ms, ease-out. The element's text is the source of truth. `aria-label` announces only the final value. |
+| `.fx-stamp` | Brief scale `1 → 1.03 → 1` when `.is-stamping` is applied. Transform only; used for diagram node reach. |
+| `.fx-tilt-none` | Opt out of positional motion: the press lift, and any later pointer-tilt. This kit has no tilt. A tilt would move while someone is reading. |
+
+Do not put `.fx-corners` and `.fx-press` on the same element. Both paint with `::before`.
+
+The underline, the marker, and the registration marks paint a flat rule with a single-token `linear-gradient()`. That is a stroke of ink or marker, not a colour gradient and not gradient text.
+
+Nothing moves while someone is reading prose. No glows, blurred orbs, glassmorphism, gradient text, neon, parallax-heavy scrolling, cursor trails, or confetti. Elevation is the 2px press, the border change, and the signal rule — not a drop shadow.
 
 ## Background
 
@@ -89,7 +110,7 @@ An inline script in `<head>`, before any stylesheet, sets `document.documentElem
 
 ## Forbidden
 
-Gradients, glows, blurred orbs, glassmorphism, `backdrop-filter`, box-shadows, pill badges, pulsing dots, emoji, border-radius above 2px, centred hero layouts, uniform grids of identical hover-lift cards, neon / emerald / purple accents, stock icon rows, lorem ipsum, invented metrics or claims.
+Colour gradients, gradient text, glows, blurred orbs, glassmorphism, `backdrop-filter`, drop shadows, pill badges, pulsing dots, emoji, border-radius above 2px, centred hero layouts, neon / emerald / purple accents, stock icon rows, lorem ipsum, invented metrics or claims. Hover-lift is only `.fx-press`. See Motion and effects.
 
 ## Content
 
@@ -97,4 +118,4 @@ Never invent facts about the owner. Use only what is already in `index.html`. If
 
 ## Files
 
-Shared tokens in `css/tokens.css`. Section styles in `css/sections/`. Print rules in `css/print.css`.
+Shared tokens in `css/tokens.css`. Section styles in `css/sections/`. Print rules in `css/print.css`. Effect primitives in `css/effects.css` and `js/modules/effects.js`.

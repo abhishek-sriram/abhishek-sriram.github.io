@@ -3,6 +3,7 @@
 .toolkit {
   padding: var(--space-64) var(--space-24) var(--space-96);
   background: var(--paper);
+  overflow-x: clip;
 }
 
 .toolkit-inner {
@@ -32,17 +33,6 @@
   padding-top: var(--space-4);
 }
 
-.toolkit-rail {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(var(--space-4) + 0.525rem);
-  height: 1px;
-  background: var(--ink);
-  pointer-events: none;
-  z-index: 0;
-}
-
 .toolkit-layer {
   position: relative;
   z-index: 1;
@@ -69,21 +59,62 @@
   color: var(--ink);
   line-height: 1.4;
   background: var(--paper);
-  padding-right: var(--space-8);
+  padding-right: var(--space-4);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.toolkit-arrow {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--ink-3);
-  line-height: 1;
-  flex-shrink: 0;
-  background: var(--paper);
-  padding-inline: var(--space-4);
-  position: relative;
-  z-index: 1;
+/* Transform only — opacity fades on mono labels fail contrast mid-scroll (Lighthouse). */
+.js .toolkit-layer-name {
+  transform: translateX(calc(var(--rise) * -1));
+  transition: transform var(--fx-in) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+
+.js .toolkit-pipeline.is-in .toolkit-layer-name,
+.js .toolkit-pipeline:focus-within .toolkit-layer-name {
+  transform: none;
+}
+
+.toolkit-pipe {
+  flex: 1 1 auto;
+  min-width: var(--space-16);
+  display: flex;
+  align-items: center;
+  color: var(--ink);
+  line-height: 0;
+}
+
+.toolkit-pipe-svg {
+  width: 100%;
+  height: 10px;
+  overflow: visible;
+  display: block;
+}
+
+.toolkit-pipe-line,
+.toolkit-pipe-head {
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  fill: none;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--fx-in) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 80ms + 40ms);
+}
+
+.js .toolkit-pipeline:not(.is-in) .toolkit-pipe-line,
+.js .toolkit-pipeline:not(.is-in) .toolkit-pipe-head {
+  stroke-dashoffset: 1;
+}
+
+.js .toolkit-pipeline.is-in .toolkit-pipe-line,
+.js .toolkit-pipeline.is-in .toolkit-pipe-head,
+.js .toolkit-pipeline:focus-within .toolkit-pipe-line,
+.js .toolkit-pipeline:focus-within .toolkit-pipe-head {
+  stroke-dashoffset: 0;
 }
 
 .toolkit-tools {
@@ -98,27 +129,68 @@
 .toolkit-tool {
   position: relative;
   margin: 0;
-  padding: 0;
+  padding: 0 0 0 var(--space-8);
   font-family: var(--font-serif);
   font-size: 0.9375rem;
   line-height: 1.4;
   color: var(--ink-2);
+  border-left: 1px solid transparent;
+  transition:
+    color var(--motion-duration) var(--ease-out),
+    border-color var(--motion-duration) var(--ease-out),
+    opacity var(--motion-duration) var(--ease-out);
 }
 
 .toolkit-tool-name {
-  display: block;
+  display: inline;
+  transition: color var(--motion-duration) var(--ease-out);
 }
 
 .toolkit-tool--noted {
   cursor: default;
 }
 
-.toolkit-tool--noted:hover .toolkit-tool-name,
+.toolkit-tool--noted:focus,
+.toolkit-tool--noted:focus-within,
+.toolkit-tool:focus-within {
+  border-left-color: var(--signal);
+}
+
 .toolkit-tool--noted:focus .toolkit-tool-name,
-.toolkit-tool--noted:focus-within .toolkit-tool-name {
+.toolkit-tool--noted:focus-within .toolkit-tool-name,
+.toolkit-tool:focus-within .toolkit-tool-name {
   color: var(--ink);
 }
 
+/* Marker lives on the name; hover/focus is on the tool row. */
+.toolkit-tool:focus-within .toolkit-tool-name.fx-marker--hover {
+  background-size: 100% var(--fx-pen);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .toolkit-tool:hover {
+    border-left-color: var(--signal);
+  }
+
+  .toolkit-tool:hover .toolkit-tool-name {
+    color: var(--ink);
+  }
+
+  .toolkit-tool:hover .toolkit-tool-name.fx-marker--hover {
+    background-size: 100% var(--fx-pen);
+  }
+
+  .toolkit-layer:has(.toolkit-tool:hover) .toolkit-tool:not(:hover),
+  .toolkit-layer:has(.toolkit-tool:focus-within) .toolkit-tool:not(:focus-within) {
+    opacity: 0.6;
+  }
+}
+
+.toolkit-layer:has(.toolkit-tool:focus-within) .toolkit-tool:not(:focus-within) {
+  opacity: 0.6;
+}
+
+/* Paper tag for "used in" notes. */
 .toolkit-used-in {
   position: absolute;
   left: 0;
@@ -131,22 +203,45 @@
   letter-spacing: 0.02em;
   line-height: 1.45;
   color: var(--ink-3);
-  background: var(--paper);
-  padding: var(--space-4) 0;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-8);
   opacity: 0;
   transform: translateY(var(--rise));
-  /* opacity only — keep links in the tab order for keyboard users */
+  pointer-events: none;
   transition:
     opacity var(--motion-duration) var(--ease-out),
     transform var(--motion-duration) var(--ease-out);
 }
 
-.toolkit-tool--noted:hover .toolkit-used-in,
 .toolkit-tool--noted:focus .toolkit-used-in,
 .toolkit-tool--noted:focus-within .toolkit-used-in,
 .toolkit-used-in:focus-within {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .toolkit-tool--noted:hover .toolkit-used-in {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+/* Touch / coarse pointers: keep "used in" visible — no hover dependency. */
+@media (hover: none), (pointer: coarse) {
+  .toolkit-tool--noted .toolkit-used-in {
+    position: static;
+    opacity: 1;
+    transform: none;
+    width: auto;
+    max-width: 100%;
+    margin-top: var(--space-4);
+    pointer-events: auto;
+  }
 }
 
 .toolkit-used-label {
@@ -154,19 +249,42 @@
 }
 
 .toolkit-used-link {
-  color: var(--signal);
+  color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   text-decoration-thickness: 1px;
 }
 
-.toolkit-used-link:hover,
 .toolkit-used-link:focus-visible {
-  color: var(--ink);
+  color: var(--signal);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .toolkit-used-link:hover {
+    color: var(--signal);
+  }
 }
 
 .toolkit-used-sep {
   color: var(--ink-3);
+}
+
+/* Mid widths: 7 squeezed columns overflow — wrap to 4 then stack. */
+@media (max-width: 1200px) and (min-width: 901px) {
+  .toolkit-pipeline {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: var(--space-16);
+    row-gap: var(--space-32);
+  }
+
+  .toolkit-pipe {
+    display: none;
+  }
+
+  .toolkit-layer-name {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
 }
 
 @media (max-width: 900px) {
@@ -174,10 +292,6 @@
     grid-template-columns: 1fr;
     column-gap: 0;
     padding-top: 0;
-  }
-
-  .toolkit-rail {
-    display: none;
   }
 
   .toolkit-layer {
@@ -199,13 +313,18 @@
     min-height: 0;
   }
 
-  .toolkit-arrow {
+  .toolkit-pipe {
     display: none;
   }
 
   .toolkit-layer-name {
     padding-right: 0;
     background: transparent;
+    white-space: normal;
+  }
+
+  .js .toolkit-layer-name {
+    transform: translateY(var(--rise));
   }
 
   .toolkit-used-in {
@@ -213,9 +332,10 @@
   }
 }
 
-@media (max-width: 320px) {
+@media (max-width: 390px) {
   .toolkit {
     padding-inline: var(--space-16);
+    padding-block: var(--space-48) var(--space-64);
   }
 
   .toolkit-tool {
@@ -224,14 +344,25 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .toolkit-used-in {
-    transition: none;
+  .js .toolkit-layer-name,
+  .js .toolkit-pipeline:not(.is-in) .toolkit-layer-name,
+  .toolkit-tool,
+  .toolkit-tool-name,
+  .toolkit-used-in,
+  .toolkit-pipe-line,
+  .toolkit-pipe-head {
     transform: none;
+    transition: none;
+    stroke-dashoffset: 0;
   }
 
-  .toolkit-tool--noted:hover .toolkit-used-in,
-  .toolkit-tool--noted:focus .toolkit-used-in,
-  .toolkit-tool--noted:focus-within .toolkit-used-in {
-    transform: none;
+  .toolkit-layer:has(.toolkit-tool:focus-within) .toolkit-tool:not(:focus-within) {
+    opacity: 0.6;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .toolkit-tool--noted:hover .toolkit-used-in {
+      transform: none;
+    }
   }
 }

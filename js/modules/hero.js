@@ -3,6 +3,11 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+const LINE_STAGGER = 90;
+const MARKER_AFTER = 400;
+const PULSE_GAP = 120;
+const PROOF_CAP_MS = 900;
+
 function fillDateline() {
   const stamp = document.querySelector('[data-hero-date]');
   if (!stamp) return;
@@ -18,6 +23,12 @@ function fillDateline() {
 
 function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function afterPaint(fn) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(fn);
+  });
 }
 
 function preparePath(path) {
@@ -60,7 +71,7 @@ function sampleCombinedPath(paths, progress) {
     dist -= lengths[i];
   }
 
-  return paths[paths.length - 1].getPointAtLength(lengths[lengths.length - 1]);
+  return paths[paths.length - 1].getPointAtLength(lengths[paths.length - 1]);
 }
 
 function animateTraveler(dot, paths, duration) {
@@ -102,6 +113,73 @@ function setStaticDiagram(paths, dot) {
   }
 }
 
+function pulseNodes() {
+  const nodes = Array.from(document.querySelectorAll('.hero-node'));
+  if (!nodes.length || prefersReducedMotion()) return;
+
+  nodes.forEach((node, i) => {
+    window.setTimeout(() => {
+      node.classList.remove('is-pulse');
+      void node.offsetWidth;
+      node.classList.add('is-pulse');
+      const ring = node.querySelector('.hero-node-ring');
+      if (!ring) return;
+      const done = () => {
+        node.classList.remove('is-pulse');
+        ring.removeEventListener('animationend', done);
+      };
+      ring.addEventListener('animationend', done);
+    }, i * PULSE_GAP);
+  });
+}
+
+function initNodeTips() {
+  const fig = document.querySelector('.hero-fig');
+  const tip = document.getElementById('heroNodeTip');
+  const nodes = Array.from(document.querySelectorAll('.hero-node'));
+  if (!fig || !tip || !nodes.length) return;
+
+  const svg = document.getElementById('heroDiagram');
+
+  function place(node) {
+    const text = node.getAttribute('data-tip');
+    if (!text || !svg) return;
+
+    const box = node.querySelector('.hero-node-box');
+    if (!box) return;
+
+    tip.textContent = text;
+    tip.hidden = false;
+
+    const figRect = fig.getBoundingClientRect();
+    const boxRect = box.getBoundingClientRect();
+    const tipRect = tip.getBoundingClientRect();
+
+    let left = boxRect.left - figRect.left + (boxRect.width - tipRect.width) / 2;
+    let top = boxRect.bottom - figRect.top + 8;
+
+    left = Math.max(0, Math.min(left, figRect.width - tipRect.width));
+    if (top + tipRect.height > figRect.height) {
+      top = boxRect.top - figRect.top - tipRect.height - 8;
+    }
+
+    tip.style.left = `${left}px`;
+    tip.style.top = `${top}px`;
+  }
+
+  function hide() {
+    tip.hidden = true;
+    tip.textContent = '';
+  }
+
+  nodes.forEach((node) => {
+    node.addEventListener('pointerenter', () => place(node));
+    node.addEventListener('pointerleave', hide);
+    node.addEventListener('focus', () => place(node));
+    node.addEventListener('blur', hide);
+  });
+}
+
 async function runDiagram() {
   const main = document.getElementById('heroPathMain');
   const tap = document.getElementById('heroPathTap');
@@ -121,9 +199,81 @@ async function runDiagram() {
   await animatePathDraw(main, 700);
   await animatePathDraw(tap, 350);
   await animateTraveler(dot, paths, 1100);
+  pulseNodes();
+}
+
+function initTitleReveal() {
+  const title = document.getElementById('heroTitle');
+  const marker = document.getElementById('heroSignal');
+  if (!title) return;
+
+  const lines = title.querySelectorAll('.hero-title-line');
+  const lastIndex = Math.max(0, lines.length - 1);
+
+  if (prefersReducedMotion()) {
+    title.classList.add('is-in');
+    if (marker) marker.classList.add('is-in');
+    return;
+  }
+
+  /* Hold the marker so effects.js does not sweep it before the line lands. */
+  if (marker) {
+    marker.classList.remove('fx-marker', 'is-in');
+  }
+
+  afterPaint(() => {
+    title.classList.add('is-armed');
+    void title.offsetWidth;
+    title.classList.add('is-in');
+
+    if (!marker) return;
+    const delay = lastIndex * LINE_STAGGER + MARKER_AFTER;
+    window.setTimeout(() => {
+      marker.classList.add('fx-marker');
+      void marker.offsetWidth;
+      marker.classList.add('is-in');
+    }, delay);
+  });
+}
+
+function initProofCaptions() {
+  const items = Array.from(document.querySelectorAll('.hero-proof-item'));
+  if (!items.length) return;
+
+  const reveal = (item) => {
+    if (item.classList.contains('is-proven')) return;
+    const delay = prefersReducedMotion() ? 0 : PROOF_CAP_MS;
+    window.setTimeout(() => item.classList.add('is-proven'), delay);
+  };
+
+  if (prefersReducedMotion() || !('IntersectionObserver' in window)) {
+    items.forEach(reveal);
+    return;
+  }
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      reveal(entry.target);
+      io.unobserve(entry.target);
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -8px 0px' });
+
+  items.forEach((item) => {
+    const rect = item.getBoundingClientRect();
+    const vh = window.innerHeight || 0;
+    if (rect.top < vh && rect.bottom > 0) {
+      reveal(item);
+      return;
+    }
+    io.observe(item);
+  });
 }
 
 export function initHero() {
   fillDateline();
+  initTitleReveal();
+  initNodeTips();
+  initProofCaptions();
   runDiagram();
 }

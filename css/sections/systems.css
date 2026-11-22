@@ -2,6 +2,7 @@
 
 .systems {
   padding: var(--space-64) var(--space-24) var(--space-96);
+  overflow-x: clip;
 }
 
 .systems-inner {
@@ -34,6 +35,21 @@
   gap: var(--space-8);
   border-bottom: 1px solid var(--rule);
   padding-bottom: var(--space-8);
+  position: relative;
+}
+
+.systems-tab-indicator {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  width: 0;
+  background: var(--ink);
+  pointer-events: none;
+  transform: translateX(0);
+  transition:
+    transform var(--motion-slow) var(--ease-out),
+    width var(--motion-slow) var(--ease-out);
 }
 
 .systems-tab {
@@ -57,12 +73,19 @@
 
 .systems-tab[aria-selected="true"] {
   color: var(--ink);
-  border-color: var(--ink);
   background: var(--paper-2);
 }
 
-.systems-tab:hover {
-  color: var(--ink);
+.systems-tab:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: var(--space-4);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .systems-tab:hover {
+    color: var(--ink);
+    border-color: var(--rule);
+  }
 }
 
 .systems-tab-status {
@@ -119,6 +142,39 @@
   border: 1px solid var(--rule);
   border-radius: var(--radius);
   padding: var(--space-16);
+  position: relative;
+  transition:
+    border-color var(--motion-duration) var(--ease-out),
+    background-color var(--motion-duration) var(--ease-out);
+}
+
+.systems-figure:focus-within {
+  border-color: var(--ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .systems-figure:hover {
+    border-color: var(--ink);
+  }
+}
+
+.systems-hint {
+  position: absolute;
+  top: var(--space-16);
+  right: var(--space-16);
+  z-index: 1;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  pointer-events: none;
+  transition: opacity var(--motion-duration) var(--ease-out);
+}
+
+.systems-hint[hidden] {
+  display: none;
 }
 
 .systems-toolbar {
@@ -155,6 +211,27 @@
   margin: 0;
 }
 
+.systems-trace-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.systems-step-counter {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  min-width: 7ch;
+}
+
+.systems-step-counter[hidden] {
+  display: none;
+}
+
 .systems-canvas {
   position: relative;
   min-height: 200px;
@@ -183,6 +260,15 @@
   .systems-canvas .systems-stepper {
     display: flex !important;
   }
+
+  /* Stepper already carries What/Why/Trade-off; hide duplicate panel. */
+  .systems-annotation {
+    display: none;
+  }
+
+  .systems-hint {
+    display: none;
+  }
 }
 
 @media (min-width: 720px) {
@@ -195,7 +281,14 @@
   stroke: var(--ink);
   stroke-width: 1.5;
   opacity: 0.55;
-  transition: opacity var(--motion-duration) var(--ease-out), stroke var(--motion-duration) var(--ease-out);
+  transition:
+    opacity var(--motion-duration) var(--ease-out),
+    stroke var(--motion-duration) var(--ease-out);
+}
+
+.systems-svg.has-selection .systems-edge:not(.is-selected):not(.is-hot):not(.is-trace) {
+  stroke: var(--ink-3);
+  opacity: 0.45;
 }
 
 .systems-edge.is-hot,
@@ -207,6 +300,10 @@
 
 .systems-edge.is-dimmed {
   opacity: 0.15;
+}
+
+.systems-edge.is-drawing {
+  opacity: 1;
 }
 
 .systems-edge-label {
@@ -232,9 +329,18 @@
   pointer-events: none;
 }
 
+.systems-privacy-boundary.is-drawing {
+  transition: stroke-dashoffset 400ms var(--ease-out);
+}
+
 .systems-node {
   cursor: pointer;
   outline: none;
+}
+
+.systems-node-body {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .systems-node-rect {
@@ -244,6 +350,7 @@
   transition:
     fill var(--motion-duration) var(--ease-out),
     stroke var(--motion-duration) var(--ease-out),
+    stroke-width var(--motion-duration) var(--ease-out),
     opacity var(--motion-duration) var(--ease-out);
 }
 
@@ -253,6 +360,13 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   fill: var(--ink-3);
+  transition: fill var(--motion-duration) var(--ease-out);
+}
+
+.systems-node.is-hover .systems-node-kind,
+.systems-node.is-selected .systems-node-kind,
+.systems-node.is-linked .systems-node-kind {
+  fill: var(--ink-2);
 }
 
 .systems-node-label {
@@ -262,8 +376,42 @@
   fill: var(--ink);
 }
 
+.systems-node-selected-tag {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--signal);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+
+.systems-node.is-selected .systems-node-selected-tag {
+  opacity: 1;
+}
+
+/* SVG registration marks — fx-corners equivalent. */
+.systems-node-corners {
+  pointer-events: none;
+}
+
+.systems-node-corner {
+  stroke: var(--ink);
+  stroke-width: 1;
+  fill: none;
+  opacity: 0;
+  transition: opacity var(--motion-slow) var(--ease-out);
+}
+
+.systems-node.is-hover .systems-node-corner,
+.systems-node:focus-visible .systems-node-corner {
+  opacity: 1;
+}
+
 .systems-node.is-selected .systems-node-rect {
   stroke: var(--signal);
+  stroke-width: 2.5;
   fill: color-mix(in srgb, var(--signal) 10%, var(--paper));
 }
 
@@ -272,8 +420,14 @@
   stroke: var(--ink);
 }
 
+.systems-node.is-selected.is-hover .systems-node-rect,
+.systems-node.is-selected.is-linked .systems-node-rect {
+  stroke: var(--signal);
+}
+
 .systems-node.is-dimmed {
   opacity: 0.28;
+  transition: opacity var(--motion-duration) var(--ease-out);
 }
 
 .systems-node.is-metrics .systems-node-rect {
@@ -296,6 +450,18 @@
   pointer-events: none;
 }
 
+.systems-trail-ghost {
+  fill: var(--signal);
+  stroke: none;
+  pointer-events: none;
+  opacity: 0.45;
+  transition: opacity 280ms var(--ease-out);
+}
+
+.systems-trail-ghost.is-fading {
+  opacity: 0;
+}
+
 .systems-annotation {
   min-width: 0;
   background: var(--paper);
@@ -303,6 +469,24 @@
   border-radius: var(--radius);
   padding: var(--space-24);
   min-height: 200px;
+  transition:
+    border-color var(--motion-duration) var(--ease-out),
+    background-color var(--motion-duration) var(--ease-out),
+    opacity 180ms var(--ease-out);
+}
+
+.systems-annotation.is-fading {
+  opacity: 0;
+}
+
+.systems-annotation:focus-within {
+  border-color: color-mix(in srgb, var(--ink) 55%, var(--rule));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .systems-annotation:hover {
+    border-color: color-mix(in srgb, var(--ink) 55%, var(--rule));
+  }
 }
 
 .systems-annotation-empty {
@@ -332,6 +516,15 @@
 
 .systems-annotation-row + .systems-annotation-row {
   margin-top: var(--space-16);
+}
+
+.systems-annotation-row {
+  --i: 0;
+}
+
+.js .systems-annotation.is-ready .systems-annotation-row {
+  animation: fx-rise 180ms var(--ease-out) backwards;
+  animation-delay: calc(var(--i) * 50ms);
 }
 
 .systems-annotation-key {
@@ -421,6 +614,23 @@
   margin-top: var(--space-16);
 }
 
+@media (max-width: 1024px) {
+  .systems-workbench {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: var(--space-16);
+  }
+
+  .systems-annotation {
+    padding: var(--space-16);
+  }
+}
+
+@media (max-width: 900px) {
+  .systems-workbench {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 719px) {
   .systems {
     padding: var(--space-48) var(--space-16) var(--space-64);
@@ -430,20 +640,70 @@
     grid-template-columns: 1fr;
   }
 
-  .systems-toolbar #systemsTrace {
+  .systems-toolbar #systemsTrace,
+  .systems-trace-meta {
     width: 100%;
   }
 
   .systems-annotation {
     order: 2;
   }
+
+  .systems-switcher {
+    gap: var(--space-4);
+  }
+
+  .systems-tab {
+    font-size: 0.8125rem;
+    padding: var(--space-8);
+  }
+}
+
+@media (max-width: 390px) {
+  .systems {
+    padding-inline: var(--space-16);
+  }
+
+  .systems-figure {
+    padding: var(--space-12);
+  }
+
+  .systems-hint {
+    top: var(--space-12);
+    right: var(--space-12);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .systems-tab,
+  .systems-tab-indicator,
+  .systems-figure,
+  .systems-hint,
+  .systems-annotation,
   .systems-edge,
+  .systems-node,
   .systems-node-rect,
+  .systems-node-kind,
+  .systems-node-selected-tag,
+  .systems-node-corner,
+  .systems-privacy-boundary.is-drawing,
+  .systems-trail-ghost,
   .systems-step {
     transition: none;
+  }
+
+  .js .systems-annotation.is-ready .systems-annotation-row {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .systems-tab-indicator {
+    transition: none;
+  }
+
+  .systems-traveler,
+  .systems-trail-ghost {
+    display: none;
   }
 }

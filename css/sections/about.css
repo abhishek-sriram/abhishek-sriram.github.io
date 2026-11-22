@@ -67,6 +67,15 @@
   padding-right: var(--space-8);
   padding-top: var(--space-4);
   color: var(--ink);
+  transition: opacity var(--fx-in) var(--ease-out);
+}
+
+.js .about-dropcap:not(.is-in)::first-letter {
+  opacity: 0;
+}
+
+.js .about-dropcap.is-in::first-letter {
+  opacity: 1;
 }
 
 .about-sidenotes {
@@ -83,13 +92,46 @@
 
 .about-sidenote {
   margin: 0;
-  padding-top: var(--space-12);
+  padding: var(--space-12) 0 var(--space-4) var(--space-8);
   border-top: 1px solid var(--rule);
+  border-left: 2px solid transparent;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   line-height: 1.45;
   letter-spacing: 0.02em;
   color: var(--ink-3);
+  transition:
+    color var(--motion-duration) var(--ease-out),
+    border-color var(--motion-duration) var(--ease-out),
+    background-color var(--motion-duration) var(--ease-out),
+    opacity var(--fx-in) var(--ease-out),
+    transform var(--fx-in) var(--ease-out);
+  transition-delay: 0s, 0s, 0s, calc(var(--i, 0) * var(--fx-stagger)), calc(var(--i, 0) * var(--fx-stagger));
+}
+
+.js .about-sidenote:not(.is-in) {
+  opacity: 0;
+  transform: translateX(var(--rise));
+}
+
+.js .about-sidenote.is-in,
+.js .about-sidenote:focus-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.about-sidenote:focus-visible {
+  color: var(--ink-2);
+  border-left-color: var(--signal);
+  background: color-mix(in srgb, var(--paper-2) 70%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-sidenote:hover {
+    color: var(--ink-2);
+    border-left-color: var(--signal);
+    background: color-mix(in srgb, var(--paper-2) 70%, transparent);
+  }
 }
 
 .about-optimise {
@@ -115,27 +157,108 @@
   gap: var(--space-16);
 }
 
-.about-optimise-list > div {
+.about-optimise-item {
+  position: relative;
   margin: 0;
-  padding-top: var(--space-12);
+  padding: var(--space-12) 0 var(--space-8) var(--space-32);
   border-top: 1px solid var(--rule);
+  border-left: 2px solid transparent;
+  transition:
+    border-color var(--motion-duration) var(--ease-out),
+    background-color var(--motion-duration) var(--ease-out),
+    opacity var(--fx-in) var(--ease-out),
+    transform var(--fx-in) var(--ease-out);
+  transition-delay: 0s, 0s, calc(var(--i, 0) * var(--fx-stagger)), calc(var(--i, 0) * var(--fx-stagger));
 }
 
-.about-optimise-list dt {
+.js .about-optimise-item:not(.is-in) {
+  opacity: 0;
+  transform: translateY(var(--rise));
+}
+
+.js .about-optimise-item.is-in,
+.js .about-optimise-item:focus-within {
+  opacity: 1;
+  transform: none;
+}
+
+.about-optimise-idx {
+  position: absolute;
+  left: var(--space-8);
+  top: var(--space-12);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.js .about-optimise-idx {
+  opacity: 0;
+  transform: translateY(var(--rise));
+  transition:
+    opacity var(--motion-slow) var(--ease-out),
+    transform var(--motion-slow) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * var(--fx-stagger) + 80ms);
+}
+
+.js .about-optimise-item.is-in .about-optimise-idx,
+.js .about-optimise-item:focus-within .about-optimise-idx {
+  opacity: 1;
+  transform: none;
+}
+
+.about-optimise-item:focus-within {
+  border-left-color: var(--signal);
+  background: color-mix(in srgb, var(--paper-2) 55%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-optimise-item:hover {
+    border-left-color: var(--signal);
+    background: color-mix(in srgb, var(--paper-2) 55%, transparent);
+  }
+}
+
+.about-optimise-item dt {
   margin: 0 0 var(--space-4);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 400;
   letter-spacing: 0.04em;
   color: var(--ink);
+  transition: color var(--motion-duration) var(--ease-out);
 }
 
-.about-optimise-list dd {
+.about-optimise-item dd {
   margin: 0;
   font-family: var(--font-serif);
   font-size: var(--text-body);
   line-height: var(--leading-body);
   color: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-sidenote,
+  .about-optimise-item,
+  .about-optimise-item dt,
+  .about-optimise-idx,
+  .about-dropcap::first-letter {
+    transition: none;
+  }
+
+  .js .about-dropcap:not(.is-in)::first-letter,
+  .js .about-dropcap.is-in::first-letter,
+  .js .about-sidenote:not(.is-in),
+  .js .about-sidenote.is-in,
+  .js .about-optimise-item:not(.is-in),
+  .js .about-optimise-item.is-in,
+  .js .about-optimise-idx,
+  .js .about-optimise-item.is-in .about-optimise-idx {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (max-width: 900px) {
@@ -156,5 +279,20 @@
     position: static;
     flex-direction: column;
     gap: var(--space-12);
+  }
+
+  .js .about-sidenote:not(.is-in) {
+    transform: translateX(calc(var(--rise) * -1));
+  }
+}
+
+@media (max-width: 390px) {
+  .about {
+    padding-inline: var(--space-16);
+    padding-block: var(--space-48) var(--space-64);
+  }
+
+  .about-dropcap::first-letter {
+    font-size: 2.75em;
   }
 }

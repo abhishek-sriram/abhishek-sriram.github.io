@@ -20,6 +20,30 @@ Modules use ES imports, so opening `index.html` via `file://` will not load scri
 
 Read [`DESIGN.md`](DESIGN.md) before changing UI. Colours, type, and spacing tokens live only in [`css/tokens.css`](css/tokens.css).
 
+## Motion and effects
+
+Primitives live in [`css/effects.css`](css/effects.css) and [`js/modules/effects.js`](js/modules/effects.js). Full contract: [`DESIGN.md`](DESIGN.md) § Motion and effects. Entrance states are gated behind `class="js"` on `<html>`, so the page stays visible with JavaScript off.
+
+| Class | What it does |
+|---|---|
+| `.fx-reveal` | Children fade/rise once on scroll (stagger via `--i`, cap 8). |
+| `.fx-underline` | Underline wipes on hover/focus; always drawn on coarse pointers. |
+| `.fx-marker` | Marker streak on enter (or hover with `.fx-marker--hover`). |
+| `.fx-corners` | Registration marks on hover / focus-within. |
+| `.fx-press` | 2px lift + ink border + signal top rule; no shadow. |
+| `.fx-count` | Counts the numeral once on enter (~900ms). |
+| `.fx-stamp` | Brief scale when `.is-stamping` (diagram reach). |
+| `.fx-tilt-none` | Opt out of press lift / any later tilt. |
+| `.fx-read-progress` | Optional left-margin read progress (JS-injected; hidden under reduced motion / narrow viewports). |
+
+**Opt out**
+
+- Prefer reduced motion: OS `prefers-reduced-motion: reduce` forces final states; no sweeps or count-ups.
+- Skip lift on a press target: add `.fx-tilt-none` (used on experience log entries).
+- Skip auto marker fill: use `.fx-marker--hover` (toolkit tool names).
+- Do not combine `.fx-corners` and `.fx-press` on the same node (both use `::before`).
+- Omit the class entirely to leave a block static.
+
 ## Add a system to the Workbench
 
 1. Open [`js/data/systems.js`](js/data/systems.js).
