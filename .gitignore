@@ -2,3 +2,10 @@ qa/node_modules/
 qa/test-results/
 qa/playwright-report/
 *.log
+
+_archive/
+qa/
+DESIGN.md
+.cursor/
+QA_REPORT.md
+COPY_REVIEW.md

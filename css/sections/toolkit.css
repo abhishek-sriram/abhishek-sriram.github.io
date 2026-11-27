@@ -1,368 +1,183 @@
-/* Toolkit — AI-system layers as a horizontal pipeline. */
-
 .toolkit {
-  padding: var(--space-64) var(--space-24) var(--space-96);
-  background: var(--paper);
-  overflow-x: clip;
-}
-
-.toolkit-inner {
-  align-items: start;
-  row-gap: var(--space-48);
-}
-
-.toolkit-header {
-  grid-column: 1 / -1;
-  max-width: var(--measure);
-}
-
-.toolkit-header h2 {
-  margin: 0;
-  color: var(--ink);
-  font-family: var(--font-serif);
-  font-weight: 400;
-}
-
-.toolkit-pipeline {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  column-gap: var(--space-12);
+  --band-top: clamp(3.4rem, 6.5vh, 4.8rem);
+  --band-bottom: clamp(4.75rem, 9vh, 6.75rem);
   position: relative;
-  min-width: 0;
-  padding-top: var(--space-4);
-}
-
-.toolkit-layer {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
-}
-
-.toolkit-layer-head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  min-height: 1.05rem;
-}
-
-.toolkit-layer-name {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink);
-  line-height: 1.4;
   background: var(--paper);
-  padding-right: var(--space-4);
+  color: var(--ink);
+  overflow-anchor: none;
+}
+
+.toolkit .label,
+.toolkit h2,
+.toolkit-group-heading {
+  margin: 0;
+}
+
+.toolkit h2 {
+  max-width: 14em;
+  margin-top: 0.15rem;
+}
+
+.toolkit-switch {
+  position: relative;
+  justify-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: clamp(1.6rem, 4vh, 2.6rem);
+  margin-bottom: clamp(0.75rem, 2vh, 1.35rem);
+}
+
+.toolkit-switch button {
+  font-family: var(--font-display);
+  font-optical-sizing: none;
+  font-size: var(--step-heading);
+  font-weight: 520;
+  font-variation-settings: "opsz" 96, "wdth" 92, "wght" 520;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  padding: 0.32em 0.42em;
+  color: var(--ink);
+  text-align: left;
   white-space: nowrap;
-  flex-shrink: 0;
+  cursor: pointer;
 }
 
-/* Transform only — opacity fades on mono labels fail contrast mid-scroll (Lighthouse). */
-.js .toolkit-layer-name {
-  transform: translateX(calc(var(--rise) * -1));
-  transition: transform var(--fx-in) var(--ease-out);
-  transition-delay: calc(var(--i, 0) * 80ms);
-}
-
-.js .toolkit-pipeline.is-in .toolkit-layer-name,
-.js .toolkit-pipeline:focus-within .toolkit-layer-name {
-  transform: none;
-}
-
-.toolkit-pipe {
-  flex: 1 1 auto;
-  min-width: var(--space-16);
-  display: flex;
-  align-items: center;
+.toolkit-switch button[aria-checked="true"] {
+  background: var(--acid);
   color: var(--ink);
-  line-height: 0;
 }
 
-.toolkit-pipe-svg {
-  width: 100%;
-  height: 10px;
-  overflow: visible;
-  display: block;
+.toolkit-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
-.toolkit-pipe-line,
-.toolkit-pipe-head {
-  stroke: currentColor;
-  stroke-width: 1;
-  stroke-linecap: square;
-  stroke-linejoin: miter;
-  fill: none;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset var(--fx-in) var(--ease-out);
-  transition-delay: calc(var(--i, 0) * 80ms + 40ms);
+.toolkit-board {
+  position: relative;
+  z-index: 0;
 }
 
-.js .toolkit-pipeline:not(.is-in) .toolkit-pipe-line,
-.js .toolkit-pipeline:not(.is-in) .toolkit-pipe-head {
-  stroke-dashoffset: 1;
+.toolkit-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.4rem 1.5rem;
+  align-items: start;
+  padding-block: 1.65rem 0.2rem;
 }
 
-.js .toolkit-pipeline.is-in .toolkit-pipe-line,
-.js .toolkit-pipeline.is-in .toolkit-pipe-head,
-.js .toolkit-pipeline:focus-within .toolkit-pipe-line,
-.js .toolkit-pipeline:focus-within .toolkit-pipe-head {
-  stroke-dashoffset: 0;
+.toolkit-group-name {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.12rem 0;
+  font-family: var(--font-display);
+  font-optical-sizing: none;
+  font-size: var(--step-heading);
+  font-weight: 520;
+  font-variation-settings: "opsz" 48, "wdth" 100, "wght" 520;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-align: left;
+  text-wrap: balance;
+  cursor: pointer;
 }
 
-.toolkit-tools {
+.toolkit-group-name:hover,
+.toolkit-group-name:focus-visible {
+  color: var(--cobalt);
+}
+
+.toolkit-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1.15rem;
+  margin: 0;
+  padding: 0.15rem 0 0.35rem;
   list-style: none;
+}
+
+.toolkit-token {
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42em;
+  padding: 0.12rem 0;
+  font-family: var(--font-mono);
+  font-size: var(--step-body);
+  font-weight: 450;
+  font-variation-settings: "wdth" 100, "wght" 450;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  white-space: nowrap;
+  transform-origin: center center;
+  transition: opacity var(--duration-token, 0.16s) var(--ease-glide);
+}
+
+.toolkit-mark {
+  flex: none;
+  width: 0.55em;
+  height: 0.55em;
+  background: transparent;
+  outline: 1px solid var(--acid);
+  transition: background-color var(--duration-token, 0.16s) var(--ease-glide);
+}
+
+.toolkit-token:hover .toolkit-mark {
+  background: var(--acid);
+}
+
+.toolkit-board:has(.toolkit-group-name:is(:hover, :focus, :focus-visible)) .toolkit-token {
+  opacity: 0.32;
+}
+
+.toolkit-group:has(.toolkit-group-name:is(:hover, :focus, :focus-visible)) .toolkit-token {
+  opacity: 1;
+}
+
+html[data-motion="full"] .toolkit:not(.is-in) .toolkit-group {
+  clip-path: inset(50% 0);
+}
+
+html[data-motion="full"] .toolkit.is-in .toolkit-group {
+  clip-path: inset(0);
+  transition: clip-path var(--duration-slit, 0.6s) var(--ease-snap);
+  transition-delay: calc(var(--i, 0) * var(--delay-group, 0.06s));
+}
+
+.toolkit-static h3 {
+  margin: 1.25rem 0 0.45rem;
+  font-family: var(--font-display);
+  font-optical-sizing: none;
+  font-size: var(--step-heading);
+  font-weight: 520;
+  font-variation-settings: "opsz" 96, "wdth" 92, "wght" 520;
+  letter-spacing: -0.04em;
+}
+
+.toolkit-static ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  list-style: none;
 }
 
-.toolkit-tool {
-  position: relative;
-  margin: 0;
-  padding: 0 0 0 var(--space-8);
-  font-family: var(--font-serif);
-  font-size: 0.9375rem;
-  line-height: 1.4;
-  color: var(--ink-2);
-  border-left: 1px solid transparent;
-  transition:
-    color var(--motion-duration) var(--ease-out),
-    border-color var(--motion-duration) var(--ease-out),
-    opacity var(--motion-duration) var(--ease-out);
-}
-
-.toolkit-tool-name {
-  display: inline;
-  transition: color var(--motion-duration) var(--ease-out);
-}
-
-.toolkit-tool--noted {
-  cursor: default;
-}
-
-.toolkit-tool--noted:focus,
-.toolkit-tool--noted:focus-within,
-.toolkit-tool:focus-within {
-  border-left-color: var(--signal);
-}
-
-.toolkit-tool--noted:focus .toolkit-tool-name,
-.toolkit-tool--noted:focus-within .toolkit-tool-name,
-.toolkit-tool:focus-within .toolkit-tool-name {
-  color: var(--ink);
-}
-
-/* Marker lives on the name; hover/focus is on the tool row. */
-.toolkit-tool:focus-within .toolkit-tool-name.fx-marker--hover {
-  background-size: 100% var(--fx-pen);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .toolkit-tool:hover {
-    border-left-color: var(--signal);
-  }
-
-  .toolkit-tool:hover .toolkit-tool-name {
-    color: var(--ink);
-  }
-
-  .toolkit-tool:hover .toolkit-tool-name.fx-marker--hover {
-    background-size: 100% var(--fx-pen);
-  }
-
-  .toolkit-layer:has(.toolkit-tool:hover) .toolkit-tool:not(:hover),
-  .toolkit-layer:has(.toolkit-tool:focus-within) .toolkit-tool:not(:focus-within) {
-    opacity: 0.6;
-  }
-}
-
-.toolkit-layer:has(.toolkit-tool:focus-within) .toolkit-tool:not(:focus-within) {
-  opacity: 0.6;
-}
-
-/* Paper tag for "used in" notes. */
-.toolkit-used-in {
-  position: absolute;
-  left: 0;
-  top: calc(100% + var(--space-4));
-  z-index: 3;
-  width: max-content;
-  max-width: 12rem;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.02em;
-  line-height: 1.45;
-  color: var(--ink-3);
-  background: var(--paper-2);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  padding: var(--space-4) var(--space-8);
-  opacity: 0;
-  transform: translateY(var(--rise));
-  pointer-events: none;
-  transition:
-    opacity var(--motion-duration) var(--ease-out),
-    transform var(--motion-duration) var(--ease-out);
-}
-
-.toolkit-tool--noted:focus .toolkit-used-in,
-.toolkit-tool--noted:focus-within .toolkit-used-in,
-.toolkit-used-in:focus-within {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .toolkit-tool--noted:hover .toolkit-used-in {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-}
-
-/* Touch / coarse pointers: keep "used in" visible — no hover dependency. */
-@media (hover: none), (pointer: coarse) {
-  .toolkit-tool--noted .toolkit-used-in {
-    position: static;
-    opacity: 1;
-    transform: none;
-    width: auto;
-    max-width: 100%;
-    margin-top: var(--space-4);
-    pointer-events: auto;
-  }
-}
-
-.toolkit-used-label {
-  color: var(--ink-3);
-}
-
-.toolkit-used-link {
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-  text-decoration-thickness: 1px;
-}
-
-.toolkit-used-link:focus-visible {
-  color: var(--signal);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .toolkit-used-link:hover {
-    color: var(--signal);
-  }
-}
-
-.toolkit-used-sep {
-  color: var(--ink-3);
-}
-
-/* Mid widths: 7 squeezed columns overflow — wrap to 4 then stack. */
-@media (max-width: 1200px) and (min-width: 901px) {
-  .toolkit-pipeline {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    column-gap: var(--space-16);
-    row-gap: var(--space-32);
-  }
-
-  .toolkit-pipe {
-    display: none;
-  }
-
-  .toolkit-layer-name {
-    white-space: normal;
-    overflow-wrap: break-word;
-  }
-}
-
-@media (max-width: 900px) {
-  .toolkit-pipeline {
-    grid-template-columns: 1fr;
-    column-gap: 0;
-    padding-top: 0;
-  }
-
-  .toolkit-layer {
-    gap: var(--space-12);
-    padding-bottom: var(--space-24);
-  }
-
-  .toolkit-layer:not(:last-child)::after {
-    content: "↓";
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    color: var(--ink-3);
-    margin-top: var(--space-16);
-    line-height: 1;
-  }
-
-  .toolkit-layer-head {
-    min-height: 0;
-  }
-
-  .toolkit-pipe {
-    display: none;
-  }
-
-  .toolkit-layer-name {
-    padding-right: 0;
-    background: transparent;
-    white-space: normal;
-  }
-
-  .js .toolkit-layer-name {
-    transform: translateY(var(--rise));
-  }
-
-  .toolkit-used-in {
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 390px) {
-  .toolkit {
-    padding-inline: var(--space-16);
-    padding-block: var(--space-48) var(--space-64);
-  }
-
-  .toolkit-tool {
-    font-size: 0.875rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .js .toolkit-layer-name,
-  .js .toolkit-pipeline:not(.is-in) .toolkit-layer-name,
-  .toolkit-tool,
-  .toolkit-tool-name,
-  .toolkit-used-in,
-  .toolkit-pipe-line,
-  .toolkit-pipe-head {
-    transform: none;
-    transition: none;
-    stroke-dashoffset: 0;
-  }
-
-  .toolkit-layer:has(.toolkit-tool:focus-within) .toolkit-tool:not(:focus-within) {
-    opacity: 0.6;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .toolkit-tool--noted:hover .toolkit-used-in {
-      transform: none;
-    }
+@media (min-width: 720px) {
+  .toolkit-group {
+    grid-template-columns: minmax(12rem, 20rem) minmax(0, 1fr);
+    column-gap: clamp(1rem, 3vw, 2.75rem);
   }
 }

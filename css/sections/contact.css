@@ -1,314 +1,178 @@
-/* Contact — inverted correspondence band. */
-
 .contact {
-  position: relative;
-  background: var(--ink);
-  color: var(--paper);
-  border-top: 3px solid transparent;
-  padding: 0;
-  overflow-x: clip;
+  --band-top: clamp(5.5rem, 14vh, 9rem);
+  --band-bottom: clamp(3rem, 6vh, 4.5rem);
+  background: var(--acid);
+  color: var(--ink);
 }
 
-/* Thick rule of the double rule — draws L→R on enter. */
-.contact::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 3px;
-  background: var(--paper);
-  transform: scaleX(1);
-  transform-origin: left center;
-  pointer-events: none;
-  z-index: 2;
-  transition: transform var(--fx-in) var(--ease-out);
-}
-
-/* Thin lower stroke of the double rule. */
-.contact::before {
-  content: "";
-  position: absolute;
-  inset: auto 0 auto 0;
-  top: var(--space-4);
-  height: 1px;
-  background: color-mix(in srgb, var(--paper) 40%, transparent);
-  pointer-events: none;
-  z-index: 1;
-  display: block;
-  transform: scaleX(1);
-  transform-origin: left center;
-  transition: transform var(--fx-in) var(--ease-out);
-  transition-delay: 60ms;
-}
-
-@keyframes contact-rule-in {
-  to {
-    transform: scaleX(1);
-  }
-}
-
-.js .contact:not(.is-in)::before,
-.js .contact:not(.is-in)::after {
-  transform: scaleX(0);
-  animation: contact-rule-in 0s linear 3s forwards;
-}
-
-.js .contact.is-in::before,
-.js .contact.is-in::after,
-.js .contact:focus-within::before,
-.js .contact:focus-within::after {
-  transform: scaleX(1);
-  animation: none;
-}
-
-.contact-inner {
-  position: relative;
-  z-index: 1;
-  width: min(100%, var(--page-max));
-  margin-inline: auto;
-  padding: var(--space-96) var(--space-24) var(--space-64);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-32);
-  min-width: 0;
-  max-width: 100%;
-  transition: background-color var(--motion-slow) var(--ease-out);
-}
-
-.contact-header {
-  max-width: var(--measure);
-  min-width: 0;
-  width: 100%;
-}
-
-.contact .kicker {
-  color: color-mix(in srgb, var(--paper) 78%, transparent);
-}
-
-.contact h2 {
-  margin: 0 0 var(--space-16);
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: var(--text-h2);
-  line-height: 1.12;
-  color: var(--paper);
-  overflow-wrap: break-word;
-}
-
-.contact-sub {
+.contact .label,
+.contact-title,
+.contact-open,
+.contact-local {
   margin: 0;
-  max-width: var(--measure);
-  font-family: var(--font-serif);
-  font-size: var(--text-body);
-  line-height: var(--leading-body);
-  color: color-mix(in srgb, var(--paper) 88%, var(--ink));
 }
 
-.contact-email-row {
-  position: relative;
+.contact a {
+  color: var(--ink);
+}
+
+.contact ::selection {
+  background: var(--ink);
+  color: var(--acid);
+}
+
+.contact-title {
+  max-width: none;
+  margin-top: 0.2rem;
+  font-optical-sizing: none;
+  font-weight: 560;
+  font-variation-settings: "opsz" 96, "wdth" 88, "wght" 560;
+  font-size: clamp(2.7rem, 13vw, 11rem);
+  line-height: 0.84;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+}
+
+.contact-reach {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--space-16);
-  max-width: 100%;
-  min-width: 0;
-  width: 100%;
+  gap: 0.65rem 1.35rem;
+  margin-top: clamp(1.1rem, 3vh, 1.8rem);
 }
 
 .contact-email {
-  font-family: var(--font-serif);
-  font-size: clamp(1.375rem, 4vw + 0.35rem, 2.75rem);
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: var(--paper);
-  text-decoration: none;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  position: relative;
+  z-index: 1;
+  display: inline-block;
   max-width: 100%;
-  min-width: 0;
+  font-family: var(--font-display);
+  font-optical-sizing: none;
+  font-weight: 520;
+  font-variation-settings: "opsz" 96, "wdth" 92, "wght" 520;
+  font-size: clamp(1.15rem, 0.7rem + 3.4vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  text-decoration: none;
 }
 
-/* Always partially drawn (30%); full wipe on hover / focus. */
-.contact-email.fx-underline {
-  background-image: linear-gradient(var(--paper), var(--paper));
-  background-size: 30% 1px;
-  transition: background-size var(--motion-slow) var(--ease-out);
-}
-
-.contact-email.fx-underline:focus-visible {
-  background-size: 100% 1px;
-  outline: 2px solid var(--paper);
-  outline-offset: var(--space-4);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .contact-email.fx-underline {
-    background-size: 30% 1px;
-  }
-
-  .contact-email.fx-underline:hover,
-  .contact-email.fx-underline:focus-visible {
-    background-size: 100% 1px;
-  }
+.contact-email:hover,
+.contact-email:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.08em;
 }
 
 .contact-copy {
-  flex-shrink: 0;
-  border-color: var(--paper);
-  color: var(--paper);
-  background: transparent;
-  align-self: center;
-  gap: var(--space-8);
-  transition:
-    color var(--motion-duration) var(--ease-out),
-    background-color var(--motion-duration) var(--ease-out),
-    border-color var(--motion-duration) var(--ease-out),
-    opacity var(--motion-duration) var(--ease-out);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  font-weight: 450;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  cursor: pointer;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 0.15em;
 }
 
-.contact-copy-check {
-  display: none;
-  flex-shrink: 0;
+.contact-check {
+  width: 1.15rem;
+  height: 1.15rem;
+  overflow: visible;
+  opacity: 0;
 }
 
-.contact-copy-check path {
+.contact-copy.is-copied .contact-check {
+  opacity: 1;
+}
+
+.contact-check path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  transition: stroke-dashoffset var(--motion-slow) var(--ease-out);
 }
 
-.contact-copy.is-copied .contact-copy-check {
-  display: block;
+.contact-copy.is-copied .contact-check path {
+  animation: contact-check-draw var(--duration-check, 0.55s) var(--ease-snap) forwards;
 }
 
-.contact-copy.is-copied .contact-copy-check path {
-  stroke-dashoffset: 0;
+.contact-copied {
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  letter-spacing: 0.04em;
 }
 
-.contact-copy:focus-visible {
-  outline: 2px solid var(--paper);
-  outline-offset: var(--space-4);
-  opacity: 1;
-  background: var(--paper);
-  color: var(--ink);
-  border-color: var(--paper);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .contact-copy:hover {
-    opacity: 1;
-    background: var(--paper);
-    color: var(--ink);
-    border-color: var(--paper);
-  }
-}
-
-.contact-copy.is-copied {
-  border-color: color-mix(in srgb, var(--paper) 70%, var(--signal));
-  background: var(--paper);
-  color: var(--ink);
-}
-
-.contact-copy-status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.contact-copied:empty {
+  display: none;
 }
 
 .contact-links {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-16) var(--space-24);
-  max-width: 100%;
+  gap: 0.45rem 1.5rem;
+  margin-top: clamp(1.6rem, 4vh, 2.4rem);
 }
 
-.contact .link-arrow {
-  color: var(--paper);
+.contact-links a {
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  font-weight: 450;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
 }
 
-.contact .link-arrow.fx-underline {
-  background-image: linear-gradient(var(--paper), var(--paper));
+.contact-availability {
+  max-width: 40rem;
+  margin-top: clamp(2.8rem, 8vh, 5.2rem);
 }
 
-.contact .link-arrow:focus-visible {
-  color: var(--paper);
-  opacity: 0.82;
-  outline: 2px solid var(--paper);
-  outline-offset: var(--space-4);
+.contact-local {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.7rem 0.9rem;
+  margin-left: 13px;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .contact .link-arrow:hover {
-    color: var(--paper);
-    opacity: 0.82;
-  }
-
-  .contact:hover .contact-inner {
-    background: color-mix(in srgb, var(--paper) 4%, transparent);
-  }
+.contact-clock {
+  font-family: var(--font-mono);
+  font-size: clamp(1.2rem, 1rem + 0.8vw, 1.7rem);
+  font-weight: 450;
+  font-variation-settings: "wdth" 100, "wght" 450;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
-.contact:focus-within .contact-inner {
-  background: color-mix(in srgb, var(--paper) 4%, transparent);
+.contact-open {
+  margin-top: 0.7rem;
+  max-width: 46ch;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .contact-email,
-  .contact-copy,
-  .contact-inner,
-  .contact::before,
-  .contact::after,
-  .contact-copy-check path {
-    transition: none;
-  }
-
-  .contact::before,
-  .contact::after,
-  .js .contact:not(.is-in)::before,
-  .js .contact:not(.is-in)::after {
-    transform: scaleX(1);
-  }
-
-  .contact-email.fx-underline,
-  .contact-email.fx-underline:hover,
-  .contact-email.fx-underline:focus-visible {
-    background-size: 100% 1px;
-  }
-
-  .contact-copy.is-copied .contact-copy-check path {
+@keyframes contact-check-draw {
+  to {
     stroke-dashoffset: 0;
   }
 }
 
-@media (max-width: 640px) {
-  .contact-inner {
-    padding-top: var(--space-64);
-    padding-bottom: var(--space-48);
-    gap: var(--space-24);
-  }
-
-  .contact-email-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-12);
+@media (max-width: 380px) {
+  .contact-title {
+    white-space: normal;
   }
 }
 
-@media (max-width: 390px) {
-  .contact-inner {
-    padding-inline: var(--space-16);
-  }
-
-  .contact-email {
-    font-size: clamp(1.25rem, 6vw + 0.25rem, 1.75rem);
+@media (prefers-reduced-motion: reduce) {
+  .contact-copy.is-copied .contact-check path {
+    animation: none;
+    stroke-dashoffset: 0;
   }
 }

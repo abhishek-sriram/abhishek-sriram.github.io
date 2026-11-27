@@ -1,131 +1,41 @@
-/* Applied AI Field Journal — design tokens.
-   Hex values live here only. See DESIGN.md. */
-
-@font-face {
-  font-family: "Newsreader Fallback";
-  src: local("Georgia");
-  size-adjust: 106%;
-  ascent-override: 90%;
-  descent-override: 22%;
-  line-gap-override: 0%;
-}
-
-@font-face {
-  font-family: "Instrument Sans Fallback";
-  src: local("Segoe UI"), local("Helvetica Neue"), local("Arial");
-  size-adjust: 100%;
-  ascent-override: 95%;
-  descent-override: 25%;
-  line-gap-override: 0%;
-}
-
-@font-face {
-  font-family: "JetBrains Mono Fallback";
-  src: local("Consolas"), local("Courier New");
-  size-adjust: 98%;
-  ascent-override: 90%;
-  descent-override: 25%;
-  line-gap-override: 0%;
-}
-
 :root {
-  --paper: #F3EFE6;
-  --paper-2: #EBE6DA;
-  --ink: #16150F;
-  --ink-2: #4A473D;
-  /* Darkened from #7A7668 to meet WCAG AA 4.5:1 on paper / paper-2. */
-  --ink-3: #6B675C;
-  --rule: #D6D0C0;
-  --signal: #B8401A;
-  --diagram-blue: #1E3A5F;
-  --marker: #F3D98B;
-  /* Selection text stays dark on the yellow marker in both themes. */
-  --selection-fg: #16150F;
+  --cobalt: #2431F5;
+  --ink: #0A0B0F;
+  --paper: #F2F4F7;
+  --acid: #D9FF43;
+  --grey: #8B90A0;
 
-  --font-serif: "Newsreader", "Newsreader Fallback", Georgia, serif;
-  --font-ui: "Instrument Sans", "Instrument Sans Fallback", sans-serif;
-  --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, monospace;
+  --surface: var(--paper);
+  --on-surface: var(--ink);
+  --link: var(--cobalt);
 
-  --text-body: clamp(1.0625rem, 1rem + 0.3vw, 1.125rem);
-  --text-h1: clamp(2.5rem, 5vw + 1rem, 5rem);
-  --text-h2: clamp(1.75rem, 2.5vw + 1rem, 2.75rem);
-  --leading-body: 1.6;
-  --measure: 65ch;
+  --font-display: "Bricolage Grotesque", sans-serif;
+  --font-text: "Hanken Grotesk", sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, monospace;
 
-  --page-max: 1200px;
-  --grid-columns: 12;
+  --step-display: clamp(3rem, 20vw, 18rem);
+  --step-title: clamp(1.75rem, 1rem + 2.4vw, 3.5rem);
+  --step-heading: clamp(1.25rem, 1rem + 0.8vw, 1.75rem);
+  --step-body: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --step-label: clamp(0.6875rem, 0.65rem + 0.1vw, 0.8125rem);
 
-  --space-4: 4px;
-  --space-8: 8px;
-  --space-12: 12px;
-  --space-16: 16px;
-  --space-24: 24px;
-  --space-32: 32px;
-  --space-48: 48px;
-  --space-64: 64px;
-  --space-96: 96px;
-  --space-128: 128px;
+  --page-max: 1440px;
+  --gutter: clamp(1.25rem, 2.2vw, 2rem);
+  --page-pad: clamp(1.25rem, 4vw, 4.5rem);
+  --anchor-offset: 4.75rem;
 
-  --radius: 2px;
-  --motion-fast: 150ms;
-  --motion-duration: 200ms;
-  --motion-slow: 250ms;
-  --ease-out: ease-out;
-  --rise: 8px;
+  --radius: 0;
+  --radius-input: 2px;
 
-  --margin-rule: color-mix(in srgb, var(--ink) 8%, transparent);
-  --theme-color: #F3EFE6;
-  color-scheme: light;
-}
+  --ease-snap: cubic-bezier(.2, .9, .1, 1);
+  --ease-glide: cubic-bezier(.65, 0, .35, 1);
 
-:root[data-theme="dark"] {
-  --paper: #12110D;
-  --paper-2: #1A1914;
-  --ink: #ECE7DA;
-  --ink-2: #B9B3A3;
-  --ink-3: #8A8576;
-  --rule: #2E2B22;
-  --signal: #E8744A;
-  --diagram-blue: #8FB3E0;
-  /* TODO(abhishek): night-edition marker was not specified. */
-  --selection-fg: #16150F;
-  --theme-color: #12110D;
-  color-scheme: dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --paper: #12110D;
-    --paper-2: #1A1914;
-    --ink: #ECE7DA;
-    --ink-2: #B9B3A3;
-    --ink-3: #8A8576;
-    --rule: #2E2B22;
-    --signal: #E8744A;
-    --diagram-blue: #8FB3E0;
-    /* TODO(abhishek): night-edition marker was not specified. */
-    --selection-fg: #16150F;
-    --theme-color: #12110D;
-    color-scheme: dark;
-  }
-}
-
-@media print {
-  :root,
-  :root[data-theme="dark"],
-  :root:not([data-theme]) {
-    --paper: #ffffff;
-    --paper-2: #ffffff;
-    --ink: #000000;
-    --ink-2: #222222;
-    --ink-3: #333333;
-    --rule: #cccccc;
-    --signal: #000000;
-    --diagram-blue: #000000;
-    --marker: #eeeeee;
-    --selection-fg: #000000;
-    --margin-rule: transparent;
-    --theme-color: #ffffff;
-    color-scheme: light;
-  }
+  --duration-surface: 500ms;
+  --duration-reveal: 700ms;
+  --duration-ui: 220ms;
+  --duration-rail: 340ms;
+  --duration-row: 500ms;
+  --duration-token: 160ms;
+  --duration-credential: 780ms;
+  --duration-index: 180ms;
 }

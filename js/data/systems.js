@@ -1,9 +1,3 @@
-/**
- * Engineering Workbench — system architectures.
- * Facts only from index.html. Do not invent latencies, model choices,
- * accuracy numbers, or design rationales beyond what is already published.
- */
-
 export const systems = [
   {
     id: 'mindpulse',
@@ -115,11 +109,11 @@ export const systems = [
         col: 5,
         row: 1,
         what: 'Symptom-specific guidance returned to the user.',
-        // TODO(abhishek): why this output shape for end users
+        // TODO(owner): why this output shape for end users
         why: null,
-        // TODO(abhishek): tradeoff of specificity vs clinical caution
+        // TODO(owner): tradeoff of specificity vs clinical caution
         tradeoff: null,
-        // TODO(abhishek): guidance usefulness or safety metric
+        // TODO(owner): guidance usefulness or safety metric
         metric: null,
         layers: ['flow'],
       },
@@ -154,11 +148,11 @@ export const systems = [
         col: 0,
         row: 0,
         what: 'Natural-language query about the user’s digital footprint and end-of-life preferences.',
-        // TODO(abhishek): why multimodal intake for this product surface
+        // TODO(owner): why multimodal intake for this product surface
         why: null,
-        // TODO(abhishek): tradeoff of modality coverage vs latency
+        // TODO(owner): tradeoff of modality coverage vs latency
         tradeoff: null,
-        // TODO(abhishek): query volume or latency metric
+        // TODO(owner): query volume or latency metric
         metric: null,
         layers: ['flow'],
       },
@@ -205,11 +199,11 @@ export const systems = [
         col: 2,
         row: 1,
         what: 'Natural-language answer grounded in retrieved vault context.',
-        // TODO(abhishek): why this answer format for B4iGo users
+        // TODO(owner): why this answer format for B4iGo users
         why: null,
-        // TODO(abhishek): tradeoff of verbosity vs privacy leakage risk
+        // TODO(owner): tradeoff of verbosity vs privacy leakage risk
         tradeoff: null,
-        // TODO(abhishek): answer grounding or safety metric
+        // TODO(owner): answer grounding or safety metric
         metric: null,
         layers: ['flow'],
       },
@@ -241,11 +235,11 @@ export const systems = [
         col: 0,
         row: 0,
         what: 'User query against the legislative assembly eBook corpus.',
-        // TODO(abhishek): why free-text semantic search for this corpus
+        // TODO(owner): why free-text semantic search for this corpus
         why: null,
-        // TODO(abhishek): tradeoff of semantic vs keyword search
+        // TODO(owner): tradeoff of semantic vs keyword search
         tradeoff: null,
-        // TODO(abhishek): query volume metric
+        // TODO(owner): query volume metric
         metric: null,
         layers: ['flow'],
       },
@@ -256,11 +250,11 @@ export const systems = [
         col: 1,
         row: 0,
         what: 'Contextual semantic search over the legislative eBook.',
-        // TODO(abhishek): why this retrieval approach for legislation
+        // TODO(owner): why this retrieval approach for legislation
         why: null,
-        // TODO(abhishek): tradeoff of context window vs ranking quality
+        // TODO(owner): tradeoff of context window vs ranking quality
         tradeoff: null,
-        // TODO(abhishek): retrieval-only accuracy metric if measured separately
+        // TODO(owner): retrieval-only accuracy metric if measured separately
         metric: null,
         layers: ['flow'],
       },
@@ -271,9 +265,9 @@ export const systems = [
         col: 2,
         row: 0,
         what: 'Gemini 2.0 Flash powering the contextual semantic search system.',
-        // TODO(abhishek): why Gemini 2.0 Flash for this workload
+        // TODO(owner): why Gemini 2.0 Flash for this workload
         why: null,
-        // TODO(abhishek): tradeoff of Flash latency/cost vs larger Gemini variants
+        // TODO(owner): tradeoff of Flash latency/cost vs larger Gemini variants
         tradeoff: null,
         metric: '94% accuracy',
         layers: ['flow', 'metrics'],
@@ -285,11 +279,11 @@ export const systems = [
         col: 3,
         row: 0,
         what: 'Contextual search results returned from the legislative eBook system.',
-        // TODO(abhishek): why this result presentation for assembly users
+        // TODO(owner): why this result presentation for assembly users
         why: null,
-        // TODO(abhishek): tradeoff of result count vs relevance
+        // TODO(owner): tradeoff of result count vs relevance
         tradeoff: null,
-        // TODO(abhishek): end-to-end result quality metric beyond the stated 94%
+        // TODO(owner): end-to-end result quality metric beyond the stated 94%
         metric: null,
         layers: ['flow'],
       },

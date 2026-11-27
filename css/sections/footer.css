@@ -1,89 +1,45 @@
-/* Footer — colophon under the correspondence band. */
-
-.foot-bar {
-  position: relative;
-  z-index: 1;
-  width: min(100%, var(--page-max));
-  margin-inline: auto;
-  padding: var(--space-32) var(--space-24) var(--space-48);
-  border-top: 1px solid color-mix(in srgb, var(--paper) 28%, transparent);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-12);
+.footer {
+  padding-block: 0.95rem 1.15rem;
+  background: var(--ink);
+  color: var(--paper);
 }
 
-.foot-colophon,
-.foot-note {
+.footer p,
+.footer a {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  line-height: 1.5;
-  color: color-mix(in srgb, var(--paper) 72%, transparent);
-}
-
-.foot-top {
-  margin-top: var(--space-8);
-  font-family: var(--font-ui);
-  font-size: 0.875rem;
-  color: color-mix(in srgb, var(--paper) 78%, transparent);
-  text-decoration: none;
-  transition: color var(--motion-duration) var(--ease-out);
-}
-
-.foot-top.fx-underline {
-  background-image: linear-gradient(
-    color-mix(in srgb, var(--paper) 78%, transparent),
-    color-mix(in srgb, var(--paper) 78%, transparent)
-  );
-}
-
-.foot-top::after {
-  content: "\00a0\2191";
-  display: inline-block;
-  text-decoration: none;
-  transition: transform var(--motion-duration) var(--ease-out);
-}
-
-.foot-top:focus-visible {
+  font-size: var(--step-label);
+  font-weight: 450;
+  font-variation-settings: "wdth" 100, "wght" 450;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
   color: var(--paper);
-  outline: 2px solid var(--paper);
-  outline-offset: var(--space-4);
 }
 
-.foot-top:focus-visible::after {
-  transform: translateY(-2px);
+.footer a {
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .foot-top:hover {
-    color: var(--paper);
-  }
-
-  .foot-top:hover::after {
-    transform: translateY(-2px);
-  }
+.footer .page {
+  align-items: baseline;
+  row-gap: 0.4rem;
 }
 
-@media (max-width: 390px) {
-  .foot-bar {
-    padding-inline: var(--space-16);
-  }
+.footer-rule {
+  grid-column: 1 / -1;
+  height: 1px;
+  margin-bottom: 0.85rem;
+  background: currentColor;
+  transform-origin: left center;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .foot-top,
-  .foot-top::after {
-    transition: none;
-  }
+.footer-top {
+  justify-self: end;
+}
 
-  .foot-top:focus-visible::after {
-    transform: none;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .foot-top:hover::after {
-      transform: none;
-    }
+@media (max-width: 719px) {
+  .footer-top {
+    justify-self: start;
   }
 }

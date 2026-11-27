@@ -1,376 +1,380 @@
-/* Experience — field log of dated shipping entries. */
-
 .experience {
-  padding: var(--space-64) var(--space-24) var(--space-96);
-  /* Timeline markers sit in the left gutter with negative offsets;
-     clip so they do not inflate document scrollWidth. */
-  overflow-x: clip;
-}
-
-.experience-inner {
-  align-items: start;
-  row-gap: var(--space-48);
-}
-
-.experience-header {
-  grid-column: 1 / -1;
-  max-width: var(--measure);
-}
-
-.experience-header h2 {
-  margin: 0;
-  color: var(--ink);
-  font-family: var(--font-serif);
-  font-weight: 400;
-}
-
-.field-log-wrap {
-  grid-column: 1 / -1;
+  --band-top: clamp(3.25rem, 6vh, 5rem);
+  --band-bottom: clamp(5.75rem, 11vh, 8.25rem);
   position: relative;
-  padding-left: 0;
-  min-width: 0;
+  background: var(--paper);
+  color: var(--ink);
+  overflow-anchor: none;
 }
 
-.field-log-rule {
+.experience-intro .label,
+.experience-intro h2,
+.experience-org,
+.experience-role,
+.experience-when,
+.experience-place,
+.role-when,
+.role-org,
+.role-title,
+.role-place,
+.role-stack,
+.role-metric {
+  margin: 0;
+}
+
+.experience-intro h2 {
+  max-width: 12em;
+  margin-top: 0.15rem;
+}
+
+.experience-sticky {
   display: none;
 }
 
-.field-log {
+.experience-log {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-48);
 }
 
-.field-log-item {
-  margin: 0;
-  padding: 0;
+.experience-entry {
+  --read: 1;
   position: relative;
+  padding-block: 1.85rem;
+  color: color-mix(in srgb, var(--ink) calc(var(--read) * 100%), var(--paper));
+}
+
+.experience-log article {
   min-width: 0;
 }
 
-.field-log-item::before {
-  content: none;
+.experience-log article > p {
+  max-width: 64ch;
 }
 
-.log-entry {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-12);
-  align-items: start;
-  padding: var(--space-12);
-  min-width: 0;
-  background: transparent;
+.role-org {
+  margin-top: 0.2rem;
+  font-family: var(--font-display);
+  font-optical-sizing: none;
+  font-weight: 520;
+  font-variation-settings: "opsz" 96, "wdth" 92, "wght" 520;
+  font-size: clamp(2.4rem, 1rem + 5vw, 4.25rem);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
 }
 
-.log-entry.fx-press {
-  /* Border already reserved by .fx-press — no hover layout shift. */
-  transition:
-    transform var(--motion-slow) var(--ease-out),
-    border-color var(--motion-duration) var(--ease-out),
-    background-color var(--motion-duration) var(--ease-out);
+.role-title {
+  margin-top: 0.2rem;
 }
 
-.log-entry.fx-press:focus-visible,
-.log-entry.fx-press:has(:focus-visible) {
-  background: color-mix(in srgb, var(--paper-2) 55%, transparent);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .log-entry.fx-press:hover {
-    background: color-mix(in srgb, var(--paper-2) 55%, transparent);
-  }
-}
-
-.log-date {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-8);
+.role-place,
+.experience-place {
+  margin-top: 0.35rem;
+  color: color-mix(in srgb, var(--ink) 62%, var(--paper));
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--step-label);
   letter-spacing: 0.04em;
-  color: var(--ink-3);
-  line-height: 1.4;
-  min-width: 0;
-  transition: color var(--motion-duration) var(--ease-out);
 }
 
-.log-date time {
-  font: inherit;
-  color: inherit;
+.role-current,
+.experience-when .label {
+  color: var(--cobalt);
 }
 
-.log-date .tag {
-  color: var(--signal);
-}
-
-.log-role {
-  min-width: 0;
-}
-
-.log-role h3 {
-  margin: 0 0 var(--space-4);
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(1.125rem, 1rem + 0.4vw, 1.375rem);
-  line-height: 1.25;
-  color: var(--ink);
-  overflow-wrap: break-word;
-}
-
-.log-org,
-.log-loc {
-  margin: 0;
-  font-family: var(--font-ui);
-  font-size: 0.875rem;
-  line-height: 1.4;
-  color: var(--ink-2);
-}
-
-.log-loc {
-  color: var(--ink-3);
-}
-
-.log-body {
-  min-width: 0;
-}
-
-.log-body > p {
-  margin: 0 0 var(--space-16);
-  font-family: var(--font-serif);
-  font-size: var(--text-body);
-  line-height: var(--leading-body);
-  color: var(--ink-2);
-  max-width: var(--measure);
-  overflow-wrap: break-word;
-}
-
-.log-body > .log-built {
-  margin: 0 0 var(--space-12);
+.role-stack {
+  margin-top: 1.35rem;
+  color: color-mix(in srgb, var(--ink) 62%, var(--paper));
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--step-label);
   letter-spacing: 0.04em;
-  line-height: 1.5;
-  color: var(--ink-3);
-  overflow-wrap: anywhere;
-  transition: color var(--motion-duration) var(--ease-out);
+  line-height: 1.45;
 }
 
-.log-entry:focus-within .log-date,
-.log-entry:focus-within .log-built {
-  color: var(--ink-2);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .log-entry:hover .log-date,
-  .log-entry:hover .log-built {
-    color: var(--ink-2);
-  }
-}
-
-.log-body .link-arrow {
-  display: inline-block;
-  font-size: 0.875rem;
-}
-
-.log-metric {
-  display: none;
-  margin: 0;
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--ink);
+.role-metric {
+  margin-top: 0.85rem;
+  color: color-mix(in srgb, var(--cobalt) calc(var(--read) * 100%), var(--paper));
+  font-family: var(--font-display);
+  font-optical-sizing: none;
+  font-size: clamp(2.75rem, 1.5rem + 3vw, 4.75rem);
+  font-weight: 520;
+  font-variation-settings: "opsz" 96, "wdth" 90, "wght" 520;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.045em;
+  line-height: 0.9;
 }
 
-/* Tablet: date + role on first row; body full-width below — avoids crushed columns. */
-@media (min-width: 768px) and (max-width: 1099px) {
-  .field-log-wrap {
-    padding-left: var(--space-24);
-  }
-
-  .field-log-rule {
-    display: block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: var(--rule);
-    transform: scaleY(0);
-    transform-origin: top center;
-    pointer-events: none;
-  }
-
-  .field-log-rule.is-static {
-    transform: scaleY(1);
-  }
-
-  .field-log-item::before {
-    content: "";
-    position: absolute;
-    left: calc(var(--space-24) * -1 - 3px);
-    top: calc(var(--space-12) + 0.35rem);
-    width: 7px;
-    height: 7px;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    background: var(--paper);
-    transition:
-      border-color var(--motion-duration) var(--ease-out),
-      background-color var(--motion-duration) var(--ease-out);
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  .field-log-item.is-marked::before,
-  .field-log-item:focus-within::before {
-    border-color: var(--signal);
-    background: var(--signal);
-  }
-
-  .log-entry {
-    grid-template-columns: 9.5rem minmax(0, 1fr);
-    column-gap: var(--space-24);
-    row-gap: var(--space-8);
-    align-items: start;
-  }
-
-  .log-entry.has-metric {
-    /* 8.5rem fits "93.3%" at clamp max without spilling into body. */
-    grid-template-columns: 9.5rem minmax(0, 1fr) 8.5rem;
-  }
-
-  .log-date {
-    flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
-    gap: var(--space-4);
-    padding-top: var(--space-4);
-  }
-
-  .log-body {
-    /* Stop before the metric column so numbers never cover copy. */
-    grid-column: 1 / 3;
-  }
-
-  .log-metric {
-    display: block;
-    grid-column: 3;
-    grid-row: 1 / span 2;
-    padding-top: var(--space-4);
-    text-align: right;
-    color: var(--ink-3);
-  }
-
-  .log-entry:not(.has-metric) .log-metric {
-    display: none;
-  }
+.role-metric {
+  position: relative;
 }
 
-@media (min-width: 1100px) {
-  .field-log-wrap {
-    padding-left: var(--space-24);
+.role-metric span[aria-hidden="true"] {
+  display: inline-block;
+  min-width: 5ch;
+}
+
+.metric-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.experience-entry a {
+  color: color-mix(in srgb, var(--cobalt) calc(80% + var(--read) * 20%), var(--paper));
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  transition: none;
+}
+
+.month-ruler {
+  display: none;
+}
+
+.experience-mask {
+  container-type: inline-size;
+  position: relative;
+  overflow: hidden;
+  min-height: 14rem;
+}
+
+.experience-slide,
+.experience-probe {
+  display: flow-root;
+}
+
+.experience-slide {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(0, 100%, 0);
+  transition: transform var(--duration-surface) var(--ease-snap);
+}
+
+.experience-slide.is-on {
+  transform: translate3d(0, 0, 0);
+}
+
+.experience-slide.is-leaving {
+  transform: translate3d(0, -100%, 0);
+}
+
+.experience-slide.is-below {
+  transform: translate3d(0, 100%, 0);
+  transition: none;
+}
+
+.experience-probe {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  visibility: hidden;
+}
+
+.experience-org {
+  font-family: var(--font-display);
+  font-optical-sizing: none;
+  font-weight: 520;
+  font-variation-settings: "opsz" 96, "wdth" 90, "wght" 520;
+  font-size: clamp(1.85rem, 14cqi, 5.25rem);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+.experience-role {
+  margin-top: 0.85rem;
+  font-size: var(--step-heading);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.experience-when {
+  margin-top: 0.4rem;
+}
+
+@media (min-width: 720px) {
+  html.js .experience .page {
+    padding-left: max(var(--page-pad), 4.25rem);
   }
 
-  .field-log-rule {
+  html.js .experience-intro {
+    margin-bottom: clamp(1.5rem, 4vh, 3rem);
+  }
+
+  /* The cell stretches with the log. The identity stays content-sized so it can stick. */
+  html.js .experience-sticky {
+    display: block;
+    grid-column: 1 / span 5;
+    grid-row: 2;
+    align-self: stretch;
+    min-width: 0;
+  }
+
+  html.js .experience-identity {
+    position: sticky;
+    top: max(var(--anchor-offset), calc(50svh - 7rem));
+  }
+
+  html.js .experience-log {
+    grid-column: 6 / span 7;
+    grid-row: 2;
+    min-width: 0;
+  }
+
+  html.js .experience-entry {
+    display: flex;
+    align-items: center;
+    min-height: 70vh;
+    padding-block: 2.5rem;
+  }
+
+  html.js .experience-log article {
+    width: 100%;
+  }
+
+  html.js .role-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  html.js .month-ruler {
     display: block;
     position: absolute;
-    left: 0;
+    z-index: 1;
     top: 0;
     bottom: 0;
-    width: 1px;
-    background: var(--rule);
-    transform: scaleY(0);
-    transform-origin: top center;
+    left: 0;
+    width: 4rem;
     pointer-events: none;
   }
 
-  .field-log-rule.is-static {
-    transform: scaleY(1);
+  html.js .month-ruler-track {
+    position: sticky;
+    top: calc(var(--anchor-offset) + 0.35rem);
+    height: calc(100svh - var(--anchor-offset) - 1.25rem);
   }
 
-  .field-log-item::before {
-    content: "";
+  .month-ruler-track::before,
+  .month-tick,
+  .month-year,
+  .month-span {
     position: absolute;
-    left: calc(var(--space-24) * -1 - 3px);
-    top: calc(var(--space-12) + 0.35rem);
-    width: 7px;
-    height: 7px;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    background: var(--paper);
+  }
+
+  .month-ruler-track::before {
+    content: "";
+    left: 0;
+    top: 0.75rem;
+    bottom: 0.75rem;
+    width: 1px;
+    background: var(--grey);
+  }
+
+  .month-tick,
+  .month-year,
+  .month-span {
+    top: calc(0.75rem + var(--at, 0) * (100% - 1.5rem));
+  }
+
+  .month-tick {
+    left: 0;
+    width: 0.42rem;
+    height: 1px;
+    background: var(--grey);
+  }
+
+  .month-tick.is-year {
+    width: 0.75rem;
+    background: var(--ink);
+  }
+
+  .month-tick.is-live {
+    background: var(--cobalt);
+  }
+
+  .month-year {
+    left: 1.05rem;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--step-label);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    transform: translateY(-50%);
+  }
+
+  .month-span {
+    left: 0;
+    width: 2px;
+    height: calc(var(--span-b, 0) * (100% - 1.5rem));
+    background: var(--cobalt);
+    top: calc(0.75rem + var(--span-a, 0) * (100% - 1.5rem));
+  }
+
+  .month-ruler.is-set .month-span {
     transition:
-      border-color var(--motion-duration) var(--ease-out),
-      background-color var(--motion-duration) var(--ease-out);
-    z-index: 1;
-    pointer-events: none;
+      top var(--duration-surface) var(--ease-snap),
+      height var(--duration-surface) var(--ease-snap);
   }
 
-  .field-log-item.is-marked::before,
-  .field-log-item:focus-within::before {
-    border-color: var(--signal);
-    background: var(--signal);
-  }
-
-  .log-entry {
-    grid-template-columns: 12rem minmax(12rem, 16rem) minmax(0, 1fr);
-    column-gap: var(--space-24);
-    row-gap: var(--space-8);
-    align-items: start;
-  }
-
-  .log-entry.has-metric {
-    /* 8.5rem fits "93.3%" at clamp max without spilling into body. */
-    grid-template-columns: 12rem minmax(12rem, 16rem) minmax(0, 1fr) 8.5rem;
-  }
-
-  .log-date {
-    flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
-    gap: var(--space-4);
-    padding-top: var(--space-4);
-  }
-
-  .log-metric {
-    display: block;
-    padding-top: var(--space-4);
-    text-align: right;
-    color: var(--ink-3);
+  .month-marker {
+    position: absolute;
+    left: -0.16rem;
+    top: calc(var(--mark, 0) * 100%);
+    width: 0.48rem;
+    height: 0.48rem;
+    background: var(--cobalt);
+    transform: translateY(-50%);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .field-log-rule {
-    transform: scaleY(1);
+  html.js .experience .page {
+    padding-left: var(--page-pad);
+  }
+
+  html.js .experience-sticky,
+  html.js .month-ruler {
+    display: none;
+  }
+
+  html.js .experience-intro,
+  html.js .experience-log {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  html.js .experience-entry {
+    display: block;
+    min-height: 0;
+  }
+
+  html.js .role-heading {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 0.85rem;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .experience-slide {
     transition: none;
-  }
-
-  .field-log-item::before,
-  .log-date,
-  .log-built {
-    transition: none;
-  }
-
-  .field-log-item::before {
-    border-color: var(--signal);
-    background: var(--signal);
-  }
-}
-
-@media (max-width: 390px) {
-  .experience {
-    padding-inline: var(--space-16);
-    padding-block: var(--space-48) var(--space-64);
-  }
-
-  .log-built {
-    word-break: break-word;
   }
 }

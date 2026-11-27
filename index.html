@@ -1,14 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-surface="cobalt">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+document.documentElement.classList.add("js");
+try {
+  var hash = location.hash;
+  var deep = hash && hash !== "#" && hash !== "#hero";
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.documentElement.dataset.motion = reduce ? "reduce" : "full";
+  if (!reduce && !deep) document.documentElement.dataset.story = "1";
+  if (!reduce && !deep && localStorage.getItem("index-directed") !== "1") {
+    document.documentElement.classList.add("is-pending");
+  }
+} catch (e) {}
+</script>
 <title>Abhishek Sriram — AI Engineer · Applied AI Field Journal</title>
 <meta name="description" content="Abhishek Sriram, AI Engineer at Infobell IT in Bengaluru. Field notes on RAG pipelines, multimodal agents, and the MLOps that take them to production.">
 <link rel="canonical" href="https://abhishek-sriram.github.io/">
 <meta name="author" content="Abhishek Sriram">
-<meta name="theme-color" content="#F3EFE6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#12110D" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2431F5">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Applied AI Field Journal">
@@ -45,44 +57,15 @@
 }
 </script>
 
-<script>
-try {
-  var storedTheme = localStorage.getItem('theme');
-  if (storedTheme) document.documentElement.dataset.theme = storedTheme;
-} catch (e) {}
-document.documentElement.classList.add('js');
-</script>
-<noscript>
-  <style>
-    .reveal,
-    .fx-reveal > *,
-    .hero-enter,
-    .hero-title-line,
-    .hero-proof-cap,
-    .cred-entry,
-    .about-sidenote,
-    .about-optimise-item,
-    .toolkit-layer-name {
-      opacity: 1 !important;
-      transform: none !important;
-      animation: none !important;
-    }
-    .fx-marker {
-      background-size: 100% var(--fx-pen, 0.4em) !important;
-    }
-  </style>
-</noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/newsreader/v26/cY9VfjOCX1hbuyalUrK49dLafXjalZCsZBsgBgbNJYQ.woff2" crossorigin>
-<link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/instrumentsans/v4/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1Q.woff2" crossorigin>
-<link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxTOlOV.woff2" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:wght@400..800&family=Martian+Mono:wdth,wght@75..112,400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:wght@400..800&family=Martian+Mono:wdth,wght@75..112,400..700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:wght@400..800&family=Martian+Mono:wdth,wght@75..112,400..700&display=swap"></noscript>
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/components.css">
-<link rel="stylesheet" href="css/effects.css">
-<link rel="stylesheet" href="css/sections/nav.css">
+<link rel="stylesheet" href="css/type.css">
+<link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/sections/hero.css">
 <link rel="stylesheet" href="css/sections/systems.css">
 <link rel="stylesheet" href="css/sections/experience.css">
@@ -92,612 +75,764 @@ document.documentElement.classList.add('js');
 <link rel="stylesheet" href="css/sections/credentials.css">
 <link rel="stylesheet" href="css/sections/contact.css">
 <link rel="stylesheet" href="css/sections/footer.css">
-<link rel="stylesheet" href="css/print.css" media="print">
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <!-- OG image: export img/og.svg to img/og.png (1200×630) for most social crawlers. -->
 </head>
-<body>
+<body data-surface="cobalt">
 
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip" href="#main">Skip to content</a>
 
-<!-- NAV -->
-<!-- Href mapping until later prompts rename section ids:
-     01 Systems → #systems
-     02 Experience → #experience
-     03 Projects → #projects
-     04 Toolkit → #toolkit
-     05 About → #about
-     06 Credentials → #credentials
-     Contact → #contact -->
-<header class="nav" id="nav">
-  <div class="nav-inner">
-    <a href="#top" class="nav-brand">
-      <span class="nav-wordmark">Abhishek Sriram<span class="nav-wordmark-dot">.</span></span>
-      <span class="nav-tagline">Applied AI Field Journal</span>
-    </a>
-
-    <nav class="nav-links" id="navMenu" aria-label="Primary">
-      <a href="#systems" class="fx-underline"><span class="nav-num" aria-hidden="true">01</span> Systems</a>
-      <a href="#experience" class="fx-underline"><span class="nav-num" aria-hidden="true">02</span> Experience</a>
-      <a href="#projects" class="fx-underline"><span class="nav-num" aria-hidden="true">03</span> Projects</a>
-      <a href="#toolkit" class="fx-underline"><span class="nav-num" aria-hidden="true">04</span> Toolkit</a>
-      <a href="#about" class="fx-underline"><span class="nav-num" aria-hidden="true">05</span> About</a>
-      <a href="#credentials" class="fx-underline"><span class="nav-num" aria-hidden="true">06</span> Credentials</a>
-      <a href="#contact" class="btn nav-contact">Contact</a>
-    </nav>
-
-    <div class="nav-tools">
-      <button type="button" class="nav-theme" id="themeToggle" aria-label="Toggle colour theme" aria-pressed="false">
-        <svg class="nav-theme-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-          <circle cx="12" cy="12" r="4"/>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-        </svg>
-        <svg class="nav-theme-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-          <path d="M21 14.5A8.5 8.5 0 1110.5 3a7 7 0 0010.5 11.5z"/>
-        </svg>
-      </button>
-      <button type="button" class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navMenu">
-        <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
-      </button>
-    </div>
+<header class="mast">
+  <a class="wordmark" href="#hero">A. Sriram</a>
+  <div class="mast-meta">
+    <time class="clock" aria-hidden="true"></time>
+    <button type="button" class="index-open" aria-expanded="false" aria-controls="index-overlay">Index</button>
   </div>
-  <div class="nav-progress" id="navProgress" hidden aria-hidden="true"></div>
 </header>
 
-<button type="button" class="scroll-top" id="scrollTop" aria-label="Back to top" aria-hidden="true" tabindex="-1">
-  <span aria-hidden="true">↑</span>
-</button>
+<div id="index-overlay" class="index-overlay" role="dialog" aria-modal="true" aria-label="Index" hidden>
+  <nav aria-label="Index">
+    <ol>
+      <li class="index-line"><a class="display" href="#hero">Applied AI Field Journal</a></li>
+      <li class="index-line"><a class="display" href="#systems">Systems</a></li>
+      <li class="index-line"><a class="display" href="#experience">Experience</a></li>
+      <li class="index-line"><a class="display" href="#projects">Projects</a></li>
+      <li class="index-line"><a class="display" href="#toolkit">Toolkit</a></li>
+      <li class="index-line"><a class="display" href="#about">About</a></li>
+      <li class="index-line"><a class="display" href="#credentials">Credentials</a></li>
+      <li class="index-line"><a class="display" href="#contact">Contact</a></li>
+    </ol>
+  </nav>
+</div>
 
 <main id="main" tabindex="-1">
-<!-- HERO -->
-<section class="hero" id="top">
-  <div class="hero-inner page">
-    <p class="hero-dateline hero-enter" id="heroDateline" style="--enter-delay: 0ms">Applied AI Field Journal / Vol. 01 / Bengaluru / <time datetime="2026-11" data-hero-date>November 2026</time></p>
 
-    <div class="hero-copy">
-      <h1 class="hero-title" id="heroTitle">
-        <span class="hero-title-line" style="--i: 0">I build AI systems that leave the notebook, and</span>
-        <span class="hero-title-line" style="--i: 1"><em class="hero-emph fx-marker" id="heroSignal">explain how they work</em>.</span>
-      </h1>
-      <p class="hero-standfirst hero-enter" style="--enter-delay: 90ms">Abhishek Sriram, AI Engineer at Infobell IT in Bengaluru. RAG pipelines, multimodal agents and the MLOps underneath them.</p>
-      <p class="hero-byline hero-enter" style="--enter-delay: 130ms">
-        <span class="hero-byline-mark" aria-hidden="true"></span>
-        Currently: Infobell IT / Open to: AI, ML and GenAI Engineer roles
-      </p>
-      <div class="hero-actions">
-        <a href="#systems" class="btn btn-primary hero-enter" style="--enter-delay: 170ms">Read the system write-ups</a>
-        <a href="#contact" class="link-arrow fx-underline hero-enter" style="--enter-delay: 210ms">Contact</a>
+<section class="hero" id="hero" data-surface="cobalt" aria-labelledby="hero-title">
+  <canvas class="hero-field" width="300" height="200" aria-hidden="true"></canvas>
+  <p class="hero-volume" aria-hidden="true">01</p>
+  <div class="page hero-page">
+    <p class="label hero-kicker">Applied AI Field Journal / Vol. 01 / Bengaluru / <time datetime="2026-11">November 2026</time></p>
+    <h1 id="hero-title" class="hero-name">
+      <span class="split-source">Abhishek Sriram</span>
+      <span class="hero-line" aria-hidden="true"><span class="hero-letter" style="--i:0">A</span><span class="hero-letter" style="--i:1">b</span><span class="hero-letter" style="--i:2">h</span><span class="hero-letter" style="--i:3">i</span><span class="hero-letter" style="--i:4">s</span><span class="hero-letter" style="--i:5">h</span><span class="hero-letter" style="--i:6">e</span><span class="hero-letter" style="--i:7">k</span></span>
+      <span class="hero-line" aria-hidden="true"><span class="hero-letter" style="--i:8">S</span><span class="hero-letter" style="--i:9">r</span><span class="hero-letter" style="--i:10">i</span><span class="hero-letter" style="--i:11">r</span><span class="hero-letter" style="--i:12">a</span><span class="hero-letter" style="--i:13">m</span></span>
+    </h1>
+    <p class="hero-support">AI engineer at Infobell IT, Bengaluru. LLM, RAG and agentic systems.</p>
+    <form class="hero-query" role="search" action="#hero-results">
+      <label class="label hero-query-label" for="hero-query-input">Query the index</label>
+      <div class="hero-query-row">
+        <input id="hero-query-input" type="search" name="q" placeholder="production RAG" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-describedby="hero-query-note" aria-controls="hero-results">
+        <button class="hero-submit" type="submit">Retrieve</button>
+        <button class="hero-reset" type="button" hidden>Reset</button>
       </div>
-      <p class="hero-links hero-enter" style="--enter-delay: 250ms">
-        <a href="mailto:abhisriram15@gmail.com" class="fx-underline">Email</a>
-        <span class="hero-links-sep" aria-hidden="true">/</span>
-        <a href="https://www.linkedin.com/in/abhishek-sriram-ds/" target="_blank" rel="noopener" class="fx-underline">LinkedIn</a>
-        <span class="hero-links-sep" aria-hidden="true">/</span>
-        <a href="https://github.com/abhishek-sriram" target="_blank" rel="noopener" class="fx-underline">GitHub</a>
-        <span class="hero-links-sep" aria-hidden="true">/</span>
-        <a href="https://drive.google.com/file/d/1ddiqAXpytsoOKVhqtTgkt3pZsqa_loIk/view" target="_blank" rel="noopener" class="fx-underline">Resume (PDF)</a>
-      </p>
-    </div>
-
-    <figure class="hero-fig fig hero-enter" style="--enter-delay: 120ms">
-      <svg class="hero-diagram" id="heroDiagram" viewBox="0 0 360 300" width="360" height="300" role="group" aria-labelledby="heroFigCaption">
-        <title>Illustrative request path through a RAG system</title>
-        <g class="hero-diagram-nodes">
-          <g class="hero-node" data-node="query" tabindex="0" role="img" aria-label="Query: the user question enters the system." data-tip="The user question enters the system.">
-            <rect class="hero-node-box" x="8" y="24" width="72" height="36"/>
-            <rect class="hero-node-ring" x="8" y="24" width="72" height="36"/>
-          </g>
-          <g class="hero-node" data-node="retriever" tabindex="0" role="img" aria-label="Retriever: pulls passages that match the query." data-tip="Pulls passages that match the query.">
-            <rect class="hero-node-box" x="112" y="24" width="88" height="36"/>
-            <rect class="hero-node-ring" x="112" y="24" width="88" height="36"/>
-          </g>
-          <g class="hero-node" data-node="vector" tabindex="0" role="img" aria-label="Vector store: similarity search over embeddings." data-tip="Similarity search over embeddings.">
-            <rect class="hero-node-box" x="232" y="24" width="112" height="36"/>
-            <rect class="hero-node-ring" x="232" y="24" width="112" height="36"/>
-          </g>
-          <g class="hero-node" data-node="llm" tabindex="0" role="img" aria-label="LLM: writes the grounded reply." data-tip="Writes the grounded reply.">
-            <rect class="hero-node-box" x="248" y="108" width="72" height="36"/>
-            <rect class="hero-node-ring" x="248" y="108" width="72" height="36"/>
-          </g>
-          <g class="hero-node" data-node="answer" tabindex="0" role="img" aria-label="Answer: the response returned to the user." data-tip="The response returned to the user.">
-            <rect class="hero-node-box" x="240" y="192" width="88" height="36"/>
-            <rect class="hero-node-ring" x="240" y="192" width="88" height="36"/>
-          </g>
-          <g class="hero-node" data-node="obs" tabindex="0" role="img" aria-label="Observability: traces and metrics for the run." data-tip="Traces and metrics for the run.">
-            <rect class="hero-node-box" x="96" y="240" width="120" height="36"/>
-            <rect class="hero-node-ring" x="96" y="240" width="120" height="36"/>
-          </g>
-        </g>
-        <g class="hero-diagram-labels" aria-hidden="true">
-          <text x="44" y="46">Query</text>
-          <text x="156" y="46">Retriever</text>
-          <text x="288" y="46">Vector store</text>
-          <text x="284" y="130">LLM</text>
-          <text x="284" y="214">Answer</text>
-          <text x="156" y="262">Observability</text>
-        </g>
-        <g class="hero-diagram-paths">
-          <path id="heroPathMain" d="M80 42 H112 M200 42 H232 M288 60 V108 M284 144 V192"/>
-          <path id="heroPathTap" d="M284 228 V256 H216"/>
-        </g>
-        <circle id="heroTraveler" class="hero-traveler" r="3.5" cx="80" cy="42" visibility="hidden"/>
-      </svg>
-      <p class="hero-node-tip" id="heroNodeTip" role="tooltip" hidden></p>
-      <figcaption class="fig-caption" id="heroFigCaption">Fig. 0 - Illustrative request path through a RAG system. Real architectures are in Systems.</figcaption>
-    </figure>
-
-    <hr class="rule-double hero-proof-rule" />
-
-    <div class="hero-proof">
-      <div class="hero-proof-item hero-enter" style="--enter-delay: 280ms">
-        <span class="hero-proof-num fx-count">94%</span>
-        <p class="hero-proof-cap">semantic search accuracy, Gemini 2.0 Flash, legislative eBook (CODEWORK)</p>
+      <div class="hero-chips">
+        <button class="hero-chip" type="button" data-query="production RAG">production RAG</button>
+        <button class="hero-chip" type="button" data-query="agents">agents</button>
+        <button class="hero-chip" type="button" data-query="published research">published research</button>
       </div>
-      <div class="hero-proof-item hero-enter" style="--enter-delay: 320ms">
-        <span class="hero-proof-num fx-count">93.3%</span>
-        <p class="hero-proof-cap">stress-detection accuracy, deployed as a Django + MySQL app</p>
-      </div>
-      <div class="hero-proof-item hero-enter" style="--enter-delay: 360ms">
-        <span class="hero-proof-num">IEEE</span>
-        <p class="hero-proof-cap"><a href="https://ieeexplore.ieee.org/document/11554646" target="_blank" rel="noopener" class="fx-underline">MindPulse paper published</a></p>
-      </div>
+      <p id="hero-query-note" class="hero-query-note">Ranked by tag and keyword match. Not a real embedding model.</p>
+    </form>
+    <div class="hero-foot">
+      <div id="hero-results" class="hero-results" aria-live="polite" aria-atomic="true" aria-label="Query results"></div>
+      <nav class="hero-links" aria-label="Connect">
+        <a href="#systems">Read the system write-ups</a>
+        <a href="#contact">Contact</a>
+        <a href="mailto:abhisriram15@gmail.com">Email</a>
+        <a href="https://www.linkedin.com/in/abhishek-sriram-ds/" target="_blank" rel="noopener" data-cursor="Open">LinkedIn</a>
+        <a href="https://github.com/abhishek-sriram" target="_blank" rel="noopener" data-cursor="Open">GitHub</a>
+        <a href="https://drive.google.com/file/d/1ddiqAXpytsoOKVhqtTgkt3pZsqa_loIk/view" target="_blank" rel="noopener" data-cursor="Open">Resume (PDF)</a>
+      </nav>
+      <ul class="hero-proof">
+        <li>
+          <span class="hero-proof-value" role="group" aria-label="94%"><span data-count="94" data-suffix="%" aria-hidden="true">94%</span></span>
+          <span class="hero-proof-caption">semantic search accuracy, legislative eBook</span>
+        </li>
+        <li>
+          <span class="hero-proof-value" role="group" aria-label="93.3%"><span data-count="93.3" data-decimals="1" data-suffix="%" aria-hidden="true">93.3%</span></span>
+          <span class="hero-proof-caption">stress-detection accuracy</span>
+        </li>
+        <li>
+          <a class="hero-proof-value" href="https://ieeexplore.ieee.org/document/11554646" target="_blank" rel="noopener" data-cursor="Open">IEEE</a>
+          <span class="hero-proof-caption">MindPulse paper published</span>
+        </li>
+      </ul>
     </div>
   </div>
 </section>
 
-<!-- SYSTEMS — Engineering Workbench -->
-<section class="section systems" id="systems" aria-labelledby="systems-title">
-  <div class="systems-inner page">
-    <header class="systems-header">
-      <p class="kicker reveal"><span class="kicker-num" data-n="01">§ 01</span> Systems</p>
-      <h2 id="systems-title" class="reveal">How the systems actually work</h2>
-      <p class="systems-standfirst reveal">Pick a system, click a component, and read why it is there and what it costs.</p>
-    </header>
-
-    <noscript>
-      <p class="systems-note">Interactive architecture diagrams need JavaScript. Linked write-ups remain available from Experience and Projects.</p>
-    </noscript>
-
-    <div class="systems-switcher" role="tablist" aria-label="Systems" id="systemsTabs"></div>
-
-    <div class="systems-meta" id="systemsMeta" hidden></div>
-
-    <div class="systems-workbench">
-      <figure class="systems-figure fig">
-        <div class="systems-toolbar" id="systemsToolbar">
-          <div class="systems-layers" role="group" aria-label="Diagram layers" id="systemsLayers"></div>
-          <button type="button" class="btn" id="systemsTrace">Trace a request</button>
+<section class="systems" id="systems" data-surface="ink" aria-labelledby="systems-title">
+  <div class="workbench" data-mode="story">
+    <div class="workbench-sheet">
+      <header class="workbench-head">
+        <p class="label">Systems</p>
+        <h2 id="systems-title">How the systems actually work</h2>
+        <p class="workbench-lead">Pick a system, click a component, and read why it is there and what it costs.</p>
+      </header>
+      <div class="workbench-grid">
+        <div class="system-column">
+          <nav aria-label="Systems">
+            <ul class="system-switch"></ul>
+          </nav>
+          <p class="system-status label"></p>
+          <p class="system-note" hidden></p>
+          <p class="system-summary"></p>
+          <ul class="system-links"></ul>
         </div>
-
-        <div class="systems-canvas" id="systemsCanvas">
-          <svg class="systems-svg" id="systemsSvg" aria-labelledby="systemsFigCaption"></svg>
-          <ol class="systems-stepper" id="systemsStepper" hidden></ol>
+        <div class="diagram-column">
+          <div class="diagram" role="group" aria-label="Architecture">
+            <svg class="diagram-draw" aria-hidden="true"></svg>
+            <div class="diagram-nodes"></div>
+          </div>
+          <ol class="stepper"></ol>
         </div>
-
-        <figcaption class="fig-caption" id="systemsFigCaption">Fig. 1 - </figcaption>
-      </figure>
-
-      <aside class="systems-annotation" id="systemsAnnotation" aria-live="polite">
-        <p class="systems-annotation-empty">Select a component to inspect it.</p>
-      </aside>
+        <aside class="brief" id="component-brief" tabindex="0" aria-live="polite" aria-atomic="true" aria-label="Selected component">
+          <p class="brief-count"></p>
+          <p class="brief-kind label"></p>
+          <h3 class="brief-title"></h3>
+          <dl class="brief-fields"></dl>
+        </aside>
+      </div>
+      <div class="workbench-controls">
+        <div class="layer-switch" role="group" aria-label="Layers"></div>
+        <button type="button" class="trace-request">Trace a request</button>
+      </div>
     </div>
+    <ul class="system-connections"></ul>
+    <p class="systems-live" aria-live="polite"></p>
   </div>
-</section>
-
-<!-- EXPERIENCE — field log -->
-<section class="section experience" id="experience" aria-labelledby="experience-title">
-  <div class="experience-inner page">
-    <header class="experience-header">
-      <p class="kicker reveal"><span class="kicker-num" data-n="02">§ 02</span> Experience</p>
-      <h2 id="experience-title" class="reveal">Where I've built</h2>
-    </header>
-
-    <div class="field-log-wrap">
-      <div class="field-log-rule" aria-hidden="true"></div>
-
-      <ol class="field-log">
-        <li class="field-log-item fx-reveal">
-          <article class="log-entry has-metric fx-press fx-tilt-none">
-            <div class="log-date">
-              <time datetime="2026-01">Jan 2026 - Present</time>
-              <span class="tag">CURRENT</span>
-            </div>
-            <div class="log-role">
-              <h3>AI Engineer</h3>
-              <p class="log-org">Infobell IT</p>
-              <p class="log-loc">Bengaluru</p>
-            </div>
-            <div class="log-body">
-              <p><strong>B4iGo.</strong> Engineered an AI‑powered conversational chatbot with multimodal LLMs and RAG for natural‑language access to users' digital footprints, personal information, and end‑of‑life preferences. Architected context‑aware retrieval across multiple data vaults while preserving privacy and integrity.</p>
-              <p><strong>InfraVision AI.</strong> Developed a full‑stack (React, FastAPI) agentic platform with a LangGraph multi‑agent pipeline that turns plain‑language project descriptions into dynamic multi‑cloud infrastructure architectures—requirement extraction, cost estimation, and automated PDF proposal delivery.</p>
-              <p><strong>Infobell Agentic Fabric.</strong> Built FinOps and observability for a production LLM gateway (Python, FastAPI, Amazon RDS, ClickHouse, OpenTelemetry/OTLP, Envoy): cost‑ and quality‑aware model routing, token‑level cost metering, FOCUS 1.4 reconciliation, unit‑economics analytics, and end‑to‑end tracing—driving a reported 30% reduction in cost per request and MTTR.</p>
-              <p class="log-built">Built with · LLM · RAG · LangGraph · FastAPI · OpenTelemetry</p>
-            </div>
-            <p class="log-metric" aria-label="30% reduction in cost per request and MTTR"><span class="fx-count">30%</span></p>
-          </article>
-        </li>
-
-        <li class="field-log-item fx-reveal">
-          <article class="log-entry has-metric fx-press fx-tilt-none">
-            <div class="log-date">
-              <time datetime="2025-02">Feb 2025 - Aug 2025</time>
-            </div>
-            <div class="log-role">
-              <h3>AI Trainee</h3>
-              <p class="log-org">CODEWORK</p>
-              <p class="log-loc">Chennai</p>
-            </div>
-            <div class="log-body">
-              <p>Implemented semantic search with Gemini 2.0 Flash for an AI‑powered legislative assembly eBook, reaching 94% retrieval accuracy for context‑aware discovery. Developed and deployed a multilingual LLaMA 3 chatbot to automate website queries. Enhanced historical Spanish baptism record images with ESRGAN and used Tesseract OCR to extract structured data from digitized archives.</p>
-              <p class="log-built">Built with · Gemini 2.0 Flash · LLaMA 3 · ESRGAN · Tesseract OCR</p>
-              <a class="link-arrow fx-underline" href="#systems/legislative-ebook">See the architecture</a>
-            </div>
-            <p class="log-metric" aria-label="94% accuracy"><span class="fx-count">94%</span></p>
-          </article>
-        </li>
-
-        <li class="field-log-item fx-reveal">
-          <article class="log-entry has-metric fx-press fx-tilt-none">
-            <div class="log-date">
-              <time datetime="2024-10">Oct 2024 - Dec 2024</time>
-            </div>
-            <div class="log-role">
-              <h3>Artificial Intelligence Intern</h3>
-              <p class="log-org">Infosys Springboard</p>
-              <p class="log-loc">Remote</p>
-            </div>
-            <div class="log-body">
-              <p>Built an ANN‑based stress detection system (93.3% accuracy) from physiological data. Designed the preprocessing and feature‑extraction pipeline, then deployed it as a real‑time Django + MySQL web application.</p>
-              <p class="log-built">Built with · ANN · Django · MySQL</p>
-            </div>
-            <p class="log-metric" aria-label="93.3% accuracy"><span class="fx-count">93.3%</span></p>
-          </article>
-        </li>
-
-        <li class="field-log-item fx-reveal">
-          <article class="log-entry fx-press fx-tilt-none">
-            <div class="log-date">
-              <time datetime="2024-08">Aug 2024 - Oct 2024</time>
-            </div>
-            <div class="log-role">
-              <h3>Machine Learning Intern</h3>
-              <p class="log-org">Feynn Labs</p>
-              <p class="log-loc">Remote</p>
-            </div>
-            <div class="log-body">
-              <p>Built a real estate valuation model, crop‑yield and disease‑risk forecasts (Linear Regression, Random Forest), and an EV‑market segmentation study (PCA + K‑Means) for the Indian electric vehicle sector.</p>
-              <p class="log-built">Built with · Linear Regression · Random Forest · PCA · K‑Means</p>
-            </div>
-          </article>
-        </li>
+  <div class="systems-reading">
+    <article id="mindpulse">
+      <h3>MindPulse</h3>
+      <p>Full-stack AI platform screening young adults for depression and anxiety using PHQ-9 and GAD-7, extended with ML severity prediction, SHAP explainability, a custom Mental Health Index, real-time risk escalation and longitudinal tracking. LLaMA 3.3 70B via Groq generates personalized, symptom-specific guidance.</p>
+      <ul>
+        <li><a href="https://ieeexplore.ieee.org/document/11554646">Published paper</a></li>
+        <li><a href="https://github.com/abhishek-sriram/MindPulse-A-Multi-Modal-AI-System-For-Early-Detection-Of-Mental-Health-Crisis-In-Young-Adults">Repository</a></li>
+      </ul>
+      <ol>
+        <li><strong>PHQ-9 + GAD-7.</strong> Questionnaire intake using PHQ-9 and GAD-7 to screen for depression and anxiety. Validated, widely used screening instruments give inputs that clinicians already recognise. Responses are self-reported, so the output is a screening signal, not a diagnosis.</li>
+        <li><strong>Severity model.</strong> ML severity prediction layered on the questionnaire screening. Goes beyond a raw questionnaire score by predicting severity from the full response pattern. Only as reliable as the data it was trained on.</li>
+        <li><strong>SHAP.</strong> SHAP explainability over the severity prediction. A screening result is hard to trust if nobody can see what drove it; SHAP shows which responses pushed the prediction. Adds computation, and it explains the model's behaviour, not the cause of someone's condition.</li>
+        <li><strong>Mental Health Index.</strong> Custom Mental Health Index derived from the screening and severity path. One trackable number makes change over time easy to see. A single score compresses detail, so it should sit beside the symptom-level view.</li>
+        <li><strong>Risk escalation.</strong> Real-time risk escalation when screening signals warrant it. High-risk responses should not wait for a report to be read. The threshold trades missed cases against false alarms.</li>
+        <li><strong>Longitudinal store.</strong> Longitudinal tracking store for screening history over time. Repeated screenings show trends that a single snapshot cannot. Stores sensitive history, so it needs careful access and privacy handling.</li>
+        <li><strong>LLaMA 3.3 70B.</strong> LLaMA 3.3 70B via Groq generating personalized, symptom-specific guidance instead of generic advice. A large open-weight model can write symptom-specific guidance instead of generic advice, and hosted Groq inference keeps responses quick enough for an interactive flow without running GPUs. Relies on a third-party hosted API and sends user text off-platform, and generated guidance is support, not clinical advice.</li>
+        <li><strong>Guidance.</strong> Symptom-specific guidance returned to the user.</li>
       </ol>
-    </div>
-  </div>
-</section>
-
-<!-- PROJECTS — lead case file and index -->
-<section class="section projects" id="projects" aria-labelledby="projects-title">
-  <div class="projects-inner page">
-    <header class="projects-header">
-      <p class="kicker reveal"><span class="kicker-num" data-n="03">§ 03</span> Projects</p>
-      <h2 id="projects-title" class="reveal">Case files</h2>
-    </header>
-
-    <article class="case-file case-file--featured fx-corners" aria-labelledby="case-mindpulse-title">
-      <span class="case-fig" aria-hidden="true">Fig. 01</span>
-      <div class="case-file-main">
-        <p class="case-kicker">Lead case file</p>
-        <h3 id="case-mindpulse-title">MindPulse</h3>
-        <p class="case-abstract">A full‑stack AI platform screening young adults for depression and anxiety using PHQ‑9 and GAD‑7, extended with ML severity prediction, SHAP explainability, a custom Mental Health Index, real‑time risk escalation and longitudinal tracking.</p>
-        <blockquote class="case-pull">
-          <p><span class="fx-marker">LLaMA 3.3 70B (via Groq) generates personalized, symptom‑specific guidance instead of generic advice.</span></p>
-        </blockquote>
-      </div>
-      <aside class="case-file-spec">
-        <h4 class="case-specs-heading" id="mindpulse-specs">Specifications</h4>
-        <dl class="case-specs fx-reveal">
-          <div>
-            <dt>Domain</dt>
-            <dd>Mental health screening</dd>
-          </div>
-          <div>
-            <dt>Method</dt>
-            <dd>PHQ-9 + GAD-7, severity prediction, SHAP, Mental Health Index</dd>
-          </div>
-          <div>
-            <dt>Model</dt>
-            <dd>LLaMA 3.3 70B via Groq</dd>
-          </div>
-          <div>
-            <dt>Status</dt>
-            <dd>Published, IEEE</dd>
-          </div>
-        </dl>
-        <ul class="case-links">
-          <li><a class="link-arrow fx-underline" href="https://github.com/abhishek-sriram/MindPulse-A-Multi-Modal-AI-System-For-Early-Detection-Of-Mental-Health-Crisis-In-Young-Adults" target="_blank" rel="noopener">Repository</a></li>
-          <li><a class="link-arrow fx-underline" href="https://ieeexplore.ieee.org/document/11554646" target="_blank" rel="noopener">Published paper</a></li>
-          <li><a class="link-arrow fx-underline" href="#systems/mindpulse">Architecture</a></li>
-        </ul>
-      </aside>
     </article>
+    <article id="b4igo">
+      <h3>B4iGo conversational agent</h3>
+      <p>Multimodal LLM-powered conversational chatbot on the B4iGo platform at Infobell IT. Users query their digital footprint and end-of-life preferences in natural language. RAG pipelines perform privacy-preserving retrieval across multiple sensitive data vaults.</p>
+      <p>Details generalised for confidentiality.</p>
+      <ol>
+        <li><strong>User query.</strong> Natural-language query about the user’s digital footprint and end-of-life preferences.</li>
+        <li><strong>Multimodal LLM.</strong> Lets users ask in natural language about their digital footprint and end-of-life preferences. Plain-language questions are easier than navigating many separate records.</li>
+        <li><strong>RAG pipeline.</strong> RAG pipelines for precise, privacy-preserving retrieval across sensitive vaults. Answers are grounded in the user's own records, not in what the model remembers. Strict privacy boundaries around sensitive data limit how freely one query can combine sources.</li>
+        <li><strong>Data vaults.</strong> Multiple sensitive data vaults queried through privacy-preserving retrieval. Retrieval is designed to be privacy-preserving across multiple sensitive data vaults.</li>
+        <li><strong>NL answer.</strong> Natural-language answer grounded in retrieved vault context.</li>
+      </ol>
+    </article>
+    <article id="legislative-ebook">
+      <h3>Legislative eBook search</h3>
+      <p>Contextual semantic search system for an AI-powered legislative assembly eBook at CODEWORK, built with Gemini 2.0 Flash.</p>
+      <p>Details generalised for confidentiality.</p>
+      <ol>
+        <li><strong>Search query.</strong> User query against the legislative assembly eBook corpus.</li>
+        <li><strong>Semantic search.</strong> Contextual semantic search over the legislative eBook.</li>
+        <li><strong>Gemini 2.0 Flash.</strong> Gemini 2.0 Flash powering the contextual semantic search system. 94% accuracy.</li>
+        <li><strong>Search results.</strong> Contextual search results returned from the legislative eBook system.</li>
+      </ol>
+    </article>
+  </div>
+</section>
 
-    <div class="case-index">
-      <table class="case-table">
-        <caption>Project index</caption>
-        <colgroup>
-          <col class="case-col-no">
-          <col class="case-col-project">
-          <col class="case-col-domain">
-          <col class="case-col-result">
-          <col class="case-col-links">
-        </colgroup>
-        <thead>
-          <tr>
-            <th scope="col">No.</th>
-            <th scope="col">Project</th>
-            <th scope="col">Domain</th>
-            <th scope="col">Result</th>
-            <th scope="col">Links</th>
-          </tr>
-        </thead>
-        <tbody class="fx-reveal">
-          <tr>
-            <th scope="row" data-label="No.">01</th>
-            <td data-label="Project">
-              <span class="index-title">RAG-based QA Chatbot</span>
-              <span class="index-desc">Retrieval‑augmented question‑answering bot that grounds LLM responses in PDF source documents for accurate, citation‑backed answers.</span>
-            </td>
-            <td class="index-domain" data-label="Domain">RAG, LLM</td>
-            <td class="index-result" data-label="Result"><span class="index-empty">—</span></td>
-            <td data-label="Links"><a class="link-arrow fx-underline" href="https://github.com/abhishek-sriram/RAG-based-QA-Chatbot" target="_blank" rel="noopener">Repository</a></td>
-          </tr>
-          <tr>
-            <th scope="row" data-label="No.">02</th>
-            <td data-label="Project">
-              <span class="index-title">Stress Detection ANN</span>
-              <span class="index-desc">Neural‑network system classifying human stress levels from physiological signals, later deployed as a Django web app during my Infosys Springboard internship.</span>
-            </td>
-            <td class="index-domain" data-label="Domain">Physiological signals</td>
-            <td class="index-result" data-label="Result">93.3% accuracy</td>
-            <td data-label="Links"><a class="link-arrow fx-underline" href="https://github.com/abhishek-sriram/Infosys-Springboard-Internship-5.0" target="_blank" rel="noopener">Repository</a></td>
-          </tr>
-          <tr>
-            <th scope="row" data-label="No.">03</th>
-            <td data-label="Project">
-              <span class="index-title">Course Recommender System</span>
-              <span class="index-desc">Personalized online‑course recommendation engine built with Scikit‑Learn and Scikit‑Surprise, lifting user engagement by 40%.</span>
-            </td>
-            <td class="index-domain" data-label="Domain">Online courses</td>
-            <td class="index-result" data-label="Result">+40% engagement</td>
-            <td data-label="Links"><a class="link-arrow fx-underline" href="https://github.com/abhishek-sriram/Personalized-Online-Course-Recommender-System" target="_blank" rel="noopener">Repository</a></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <details class="case-earlier">
-        <summary>Earlier ML work <span class="case-earlier-chevron" aria-hidden="true"></span></summary>
-        <div class="case-earlier-panel">
-          <div class="case-earlier-clip">
-            <table class="case-table">
-              <caption class="case-sr">Earlier ML work</caption>
-              <colgroup>
-                <col class="case-col-no">
-                <col class="case-col-project">
-                <col class="case-col-domain">
-                <col class="case-col-result">
-                <col class="case-col-links">
-              </colgroup>
-              <thead>
-                <tr>
-                  <th scope="col">No.</th>
-                  <th scope="col">Project</th>
-                  <th scope="col">Domain</th>
-                  <th scope="col">Result</th>
-                  <th scope="col">Links</th>
-                </tr>
-              </thead>
-              <tbody class="fx-reveal">
-                <tr>
-                  <th scope="row" data-label="No.">04</th>
-                  <td data-label="Project">
-                    <span class="index-title">SpaceX Falcon 9 Landing Prediction</span>
-                    <span class="index-desc">ML models predicting Falcon 9 first‑stage landing success using the SpaceX API, Pandas and classical classifiers.</span>
-                  </td>
-                  <td class="index-domain" data-label="Domain">First-stage landing</td>
-                  <td class="index-result" data-label="Result">91.1% accuracy</td>
-                  <td data-label="Links"><a class="link-arrow fx-underline" href="https://github.com/abhishek-sriram/SpaceX-Falcon-9-Landing-Prediction" target="_blank" rel="noopener">Repository</a></td>
-                </tr>
-                <tr>
-                  <th scope="row" data-label="No.">05</th>
-                  <td data-label="Project">
-                    <span class="index-title">Sentiment Analysis on Movie Reviews</span>
-                    <span class="index-desc">Naive Bayes sentiment classifier distinguishing positive from negative IMDB movie reviews.</span>
-                  </td>
-                  <td class="index-domain" data-label="Domain">NLP</td>
-                  <td class="index-result" data-label="Result"><span class="index-empty">—</span></td>
-                  <td data-label="Links"><a class="link-arrow fx-underline" href="https://github.com/abhishek-sriram/Sentiment-Analysis-Movie-Reviews" target="_blank" rel="noopener">Repository</a></td>
-                </tr>
-              </tbody>
-            </table>
+<section class="experience" id="experience" data-surface="paper" aria-labelledby="experience-title">
+  <div class="page">
+    <header class="experience-intro">
+      <p class="label">Experience</p>
+      <h2 id="experience-title">Where I've built</h2>
+    </header>
+    <div class="experience-sticky">
+      <div class="experience-identity">
+        <div class="experience-mask" aria-hidden="true">
+          <div class="experience-slide is-on">
+            <p class="experience-org">Infobell IT</p>
+            <p class="experience-role">AI Engineer</p>
+            <p class="experience-when"><time datetime="2026-01">Jan 2026 - Present</time> <span class="label">CURRENT</span></p>
+            <p class="experience-place">Bengaluru</p>
+          </div>
+          <div class="experience-slide is-below">
+            <p class="experience-org"></p>
+            <p class="experience-role"></p>
+            <p class="experience-when"></p>
+            <p class="experience-place"></p>
+          </div>
+          <div class="experience-probe">
+            <p class="experience-org"></p>
+            <p class="experience-role"></p>
+            <p class="experience-when"></p>
+            <p class="experience-place"></p>
           </div>
         </div>
-      </details>
-    </div>
-  </div>
-</section>
-
-<!-- TOOLKIT — AI-system layers -->
-<section class="section toolkit" id="toolkit" aria-labelledby="toolkit-title">
-  <div class="toolkit-inner page">
-    <header class="toolkit-header">
-      <p class="kicker reveal"><span class="kicker-num" data-n="04">§ 04</span> Toolkit</p>
-      <h2 id="toolkit-title" class="reveal">Tools, by the layer they serve</h2>
-    </header>
-    <div class="toolkit-pipeline" id="toolkitPipeline" aria-label="Tools by system layer"></div>
-  </div>
-</section>
-
-<!-- ABOUT — editor's note -->
-<section class="section about" id="about" aria-labelledby="about-title">
-  <div class="about-inner page">
-    <header class="about-header">
-      <p class="kicker reveal"><span class="kicker-num" data-n="05">§ 05</span> About</p>
-      <h2 id="about-title" class="reveal">Editor's note</h2>
-    </header>
-
-    <div class="about-columns">
-      <p class="about-lede"><span class="fx-marker">Most AI projects fail not because of the model, but because they never make it to production.</span></p>
-
-      <p class="about-body about-dropcap prose">I'm an AI Engineer with hands-on experience across the full lifecycle: data engineering, model development, deployment, monitoring and optimization. That work spans Generative AI, LLMs, Retrieval-Augmented Generation, NLP, classical Machine Learning, Agentic AI and MLOps—Python, PyTorch, TensorFlow, LangChain, LangGraph, MCP, FastAPI, Docker and Kubernetes—to turn research into something a real user can rely on.</p>
-
-      <aside class="about-sidenotes" aria-label="At a glance">
-        <p class="about-sidenote" style="--i:0">Based in Bengaluru, India</p>
-        <p class="about-sidenote" style="--i:1">Focus: LLMs, RAG, Agentic AI</p>
-        <p class="about-sidenote" style="--i:2">Open to: AI, ML and GenAI Engineer roles</p>
-      </aside>
-
-      <p class="about-body prose">Currently building multimodal LLM-powered agents at <strong>Infobell IT</strong>, after shipping semantic search, multilingual chatbots and stress-detection systems across three prior AI/ML internships. I care about retrieval quality, latency, observability, and privacy as much as the model itself.</p>
-
-      <div class="about-optimise">
-        <h3 class="about-optimise-title">What I optimise for</h3>
-        <dl class="about-optimise-list">
-          <div class="about-optimise-item" style="--i:0">
-            <span class="about-optimise-idx" aria-hidden="true">01</span>
-            <dt>Retrieval quality</dt>
-            <dd>How reliably the system surfaces the right context before the model answers.</dd>
-          </div>
-          <div class="about-optimise-item" style="--i:1">
-            <span class="about-optimise-idx" aria-hidden="true">02</span>
-            <dt>Latency</dt>
-            <dd>How long a user waits before getting a useful response.</dd>
-          </div>
-          <div class="about-optimise-item" style="--i:2">
-            <span class="about-optimise-idx" aria-hidden="true">03</span>
-            <dt>Observability</dt>
-            <dd>Being able to see what the system did, and where it went wrong.</dd>
-          </div>
-          <div class="about-optimise-item" style="--i:3">
-            <span class="about-optimise-idx" aria-hidden="true">04</span>
-            <dt>Privacy</dt>
-            <dd>Keeping user and proprietary data out of places it should not go.</dd>
-          </div>
-        </dl>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- CREDENTIALS — journal reference list -->
-<section class="section credentials" id="credentials" aria-labelledby="credentials-title">
-  <div class="credentials-inner page">
-    <header class="credentials-header">
-      <p class="kicker reveal"><span class="kicker-num" data-n="06">§ 06</span> Credentials</p>
-      <h2 id="credentials-title" class="reveal">References</h2>
-    </header>
-
-    <ol class="cred-list">
-      <li class="cred-entry" data-cred="1">
-        <span class="cred-num" aria-hidden="true">[1]</span>
-        <div class="cred-body">
-          <p class="cred-citation">
-            Abhishek Sriram, Ishwarya K,
-            <cite>MindPulse: A Multimodal AI Framework for Early Detection of Mental Health Crisis in Young Adults</cite>.
-            <span class="cred-venue">IEEE Xplore</span>.
-            2026.
-          </p>
-          <a class="link-arrow fx-underline" href="https://ieeexplore.ieee.org/document/11554646" target="_blank" rel="noopener">Read the paper</a>
-        </div>
+    <ol class="experience-log">
+      <li class="experience-entry">
+        <article id="experience-infobell">
+          <header class="role-heading">
+            <p class="role-when"><time datetime="2026-01">Jan 2026 - Present</time> <span class="label role-current">CURRENT</span></p>
+            <h3 class="role-org">Infobell IT</h3>
+            <p class="role-title">AI Engineer</p>
+            <p class="role-place">Bengaluru</p>
+          </header>
+          <p id="b4igo-note"><strong>B4iGo.</strong> Engineered an AI‑powered conversational chatbot with multimodal LLMs and RAG for natural‑language access to users' digital footprints, personal information, and end‑of‑life preferences. Architected context‑aware retrieval across multiple data vaults while preserving privacy and integrity.</p>
+          <p id="infravision"><strong>InfraVision AI.</strong> Developed a full‑stack (React, FastAPI) agentic platform with a LangGraph multi‑agent pipeline that turns plain‑language project descriptions into dynamic multi‑cloud infrastructure architectures—requirement extraction, cost estimation, and automated PDF proposal delivery.</p>
+          <p id="agentic-fabric"><strong>Infobell Agentic Fabric.</strong> Built FinOps and observability for a production LLM gateway (Python, FastAPI, Amazon RDS, ClickHouse, OpenTelemetry/OTLP, Envoy): cost‑ and quality‑aware model routing, token‑level cost metering, FOCUS 1.4 reconciliation, unit‑economics analytics, and end‑to‑end tracing—driving a reported 30% reduction in cost per request and MTTR.</p>
+          <p class="role-stack">Built with · LLM · RAG · LangGraph · FastAPI · OpenTelemetry</p>
+          <p class="data role-metric"><span class="metric-name">30%</span><span data-count="30" data-suffix="%" aria-hidden="true">30%</span></p>
+        </article>
       </li>
-
-      <li class="cred-entry" data-cred="2">
-        <span class="cred-num" aria-hidden="true">[2]</span>
-        <div class="cred-body">
-          <h3 class="cred-label">Education</h3>
-          <table class="cred-edu">
-            <thead>
-              <tr>
-                <th scope="col">Degree</th>
-                <th scope="col">Institution</th>
-                <th scope="col">Years</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>M.Tech Data Science</td>
-                <td>SRM IST Chennai</td>
-                <td>2023-2026</td>
-              </tr>
-              <tr>
-                <td>B.Tech Electrical and Electronics Engineering</td>
-                <td>Shanmugha Arts, Science, Technology and Research Academy</td>
-                <td>2018-2022</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <li class="experience-entry">
+        <article id="experience-codework">
+          <header class="role-heading">
+            <p class="role-when"><time datetime="2025-02">Feb 2025 - Aug 2025</time></p>
+            <h3 class="role-org">CODEWORK</h3>
+            <p class="role-title">AI Trainee</p>
+            <p class="role-place">Chennai</p>
+          </header>
+          <p>Implemented semantic search with Gemini 2.0 Flash for an AI‑powered legislative assembly eBook, reaching 94% retrieval accuracy for context‑aware discovery. Developed and deployed a multilingual LLaMA 3 chatbot to automate website queries. Enhanced historical Spanish baptism record images with ESRGAN and used Tesseract OCR to extract structured data from digitized archives.</p>
+          <p class="role-stack">Built with · Gemini 2.0 Flash · LLaMA 3 · ESRGAN · Tesseract OCR</p>
+          <p><a class="role-link" href="#legislative-ebook">See the architecture</a></p>
+          <p class="data role-metric"><span class="metric-name">94%</span><span data-count="94" data-suffix="%" aria-hidden="true">94%</span></p>
+        </article>
       </li>
-
-      <li class="cred-entry" data-cred="3">
-        <span class="cred-num" aria-hidden="true">[3]</span>
-        <div class="cred-body">
-          <h3 class="cred-label">Certifications</h3>
-          <p class="cred-issuer">IBM / Coursera</p>
-          <ol class="cred-certs">
-            <li>
-              <a href="https://www.coursera.org/account/accomplishments/professional-cert/certificate/VPC7NMN2PNAD" target="_blank" rel="noopener">IBM RAG and Agentic AI</a>
-            </li>
-            <li>
-              <a href="https://www.coursera.org/account/accomplishments/specialization/5NXFMXSFB3ZC" target="_blank" rel="noopener">IBM Generative AI Engineering</a>
-            </li>
-            <li>
-              <a href="https://www.coursera.org/account/accomplishments/specialization/2LSFASPTBKLM" target="_blank" rel="noopener">IBM Data Science Professional Certificate</a>
-            </li>
-            <li>
-              <a href="https://www.coursera.org/account/accomplishments/specialization/ACPOW8H9IVWY" target="_blank" rel="noopener">IBM DevOps and Software Engineering Professional Certificate</a>
-            </li>
-          </ol>
-        </div>
+      <li class="experience-entry">
+        <article id="experience-infosys">
+          <header class="role-heading">
+            <p class="role-when"><time datetime="2024-10">Oct 2024 - Dec 2024</time></p>
+            <h3 class="role-org">Infosys Springboard</h3>
+            <p class="role-title">Artificial Intelligence Intern</p>
+            <p class="role-place">Remote</p>
+          </header>
+          <p>Built an ANN‑based stress detection system (93.3% accuracy) from physiological data. Designed the preprocessing and feature‑extraction pipeline, then deployed it as a real‑time Django + MySQL web application.</p>
+          <p class="role-stack">Built with · ANN · Django · MySQL</p>
+          <p class="data role-metric"><span class="metric-name">93.3%</span><span data-count="93.3" data-decimals="1" data-suffix="%" aria-hidden="true">93.3%</span></p>
+        </article>
+      </li>
+      <li class="experience-entry">
+        <article id="experience-feynn">
+          <header class="role-heading">
+            <p class="role-when"><time datetime="2024-08">Aug 2024 - Oct 2024</time></p>
+            <h3 class="role-org">Feynn Labs</h3>
+            <p class="role-title">Machine Learning Intern</p>
+            <p class="role-place">Remote</p>
+          </header>
+          <p>Built a real estate valuation model, crop‑yield and disease‑risk forecasts (Linear Regression, Random Forest), and an EV‑market segmentation study (PCA + K‑Means) for the Indian electric vehicle sector.</p>
+          <p class="role-stack">Built with · Linear Regression · Random Forest · PCA · K‑Means</p>
+        </article>
       </li>
     </ol>
   </div>
+  <div class="month-ruler" aria-hidden="true">
+    <div class="month-ruler-track"></div>
+  </div>
 </section>
-</main>
 
-<!-- CONTACT — deliberate closing CTA -->
-<footer class="contact" id="contact">
-  <div class="contact-inner">
-    <header class="contact-header">
-      <p class="kicker reveal"><span class="kicker-num" data-n="07">§ 07</span> Correspondence</p>
-      <h2 class="reveal">Let's build something that ships.</h2>
-      <p class="contact-sub reveal">Hiring for AI Engineer, ML Engineer, Generative AI Engineer, Applied AI, NLP or LLM‑focused roles? I'd like to hear from you.</p>
+<section class="projects" id="projects" data-surface="ink" aria-labelledby="projects-title">
+  <div class="page">
+    <header class="projects-intro">
+      <p class="label">Projects</p>
+      <h2 id="projects-title">Case files</h2>
     </header>
 
-    <div class="contact-email-row">
-      <a href="mailto:abhisriram15@gmail.com" class="contact-email fx-underline">abhisriram15@gmail.com</a>
-      <button type="button" class="btn contact-copy" data-copy-email="abhisriram15@gmail.com" aria-label="Copy email address">
-        <span class="contact-copy-label">Copy</span>
-        <svg class="contact-copy-check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
-          <path d="M2.5 8.5 6 12l7.5-8" pathLength="1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" />
-        </svg>
-      </button>
-      <span id="copyStatus" class="contact-copy-status" aria-live="polite"></span>
-    </div>
+    <div class="project-index">
+      <ol class="project-rows">
+      <li class="project-row project-row-lead" id="project-mindpulse" data-project="mindpulse">
+        <details class="project-details">
+          <summary class="project-summary" aria-controls="case-file" aria-haspopup="dialog">
+            <span class="project-line">
+              <span class="project-no">01</span>
+              <span class="project-title">MindPulse</span>
+              <span class="project-tags"><span class="project-tag">Mental health screening</span></span>
+              <span class="project-result">Published, IEEE</span>
+              <span class="project-mark" aria-hidden="true"></span>
+            </span>
+          </summary>
+          <div class="project-dossier">
+            <div class="case-top">
+            <p class="label case-kicker">Lead case file</p>
+              <button type="button" class="case-close">Close</button>
+            </div>
+            <h3 class="case-title" id="case-mindpulse-title" tabindex="-1">MindPulse</h3>
+            <div class="case-layout">
+              <div class="project-copy">
+                <p>A full‑stack AI platform screening young adults for depression and anxiety using PHQ‑9 and GAD‑7, extended with ML severity prediction, SHAP explainability, a custom Mental Health Index, real‑time risk escalation and longitudinal tracking.</p>
+                <blockquote>
+                  <p>LLaMA 3.3 70B (via Groq) generates personalized, symptom‑specific guidance instead of generic advice.</p>
+                </blockquote>
+              </div>
+              <div class="project-spec">
+                <h4>Specifications</h4>
+                <dl>
+              <dt>Domain</dt>
+              <dd>Mental health screening</dd>
+              <dt>Method</dt>
+              <dd>PHQ-9 + GAD-7, severity prediction, SHAP, Mental Health Index</dd>
+              <dt>Model</dt>
+              <dd>LLaMA 3.3 70B via Groq</dd>
+              <dt>Status</dt>
+              <dd>Published, IEEE</dd>
+                </dl>
+                <ul class="project-links">
+              <li><a href="https://github.com/abhishek-sriram/MindPulse-A-Multi-Modal-AI-System-For-Early-Detection-Of-Mental-Health-Crisis-In-Young-Adults" target="_blank" rel="noopener" data-cursor="Open">Repository</a></li>
+              <li><a href="https://ieeexplore.ieee.org/document/11554646" target="_blank" rel="noopener" data-cursor="Open">Published paper</a></li>
+              <li><a href="#mindpulse">Architecture</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+      <li class="project-row" id="project-rag-qa" data-project="rag-qa">
+        <details class="project-details">
+          <summary class="project-summary" aria-controls="case-file" aria-haspopup="dialog">
+            <span class="project-line">
+              <span class="project-no">02</span>
+              <span class="project-title">RAG-based QA Chatbot</span>
+              <span class="project-tags"><span class="project-tag">RAG</span><span class="project-tag">LLM</span></span>
+              <span class="project-result is-gap">—</span>
+              <span class="project-mark" aria-hidden="true"></span>
+            </span>
+          </summary>
+          <div class="project-dossier">
+            <div class="case-top">
+              <button type="button" class="case-close">Close</button>
+            </div>
+            <h3 class="case-title" id="case-rag-qa-title" tabindex="-1">RAG-based QA Chatbot</h3>
+            <div class="case-layout">
+              <div class="project-copy">
+                <p>Retrieval‑augmented question‑answering bot that grounds LLM responses in PDF source documents for accurate, citation‑backed answers.</p>
+              </div>
+              <div class="project-spec">
+                <h4>Specifications</h4>
+                <dl>
+              <dt>Domain</dt>
+              <dd>RAG, LLM</dd>
+              <dt>Result</dt>
+              <dd>—</dd>
+                </dl>
+                <ul class="project-links">
+              <li><a href="https://github.com/abhishek-sriram/RAG-based-QA-Chatbot" target="_blank" rel="noopener" data-cursor="Open">Repository</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+      <li class="project-row" id="project-stress" data-project="stress">
+        <details class="project-details">
+          <summary class="project-summary" aria-controls="case-file" aria-haspopup="dialog">
+            <span class="project-line">
+              <span class="project-no">03</span>
+              <span class="project-title">Stress Detection ANN</span>
+              <span class="project-tags"><span class="project-tag">Physiological signals</span></span>
+              <span class="project-result">93.3% accuracy</span>
+              <span class="project-mark" aria-hidden="true"></span>
+            </span>
+          </summary>
+          <div class="project-dossier">
+            <div class="case-top">
+              <button type="button" class="case-close">Close</button>
+            </div>
+            <h3 class="case-title" id="case-stress-title" tabindex="-1">Stress Detection ANN</h3>
+            <div class="case-layout">
+              <div class="project-copy">
+                <p>Neural‑network system classifying human stress levels from physiological signals, later deployed as a Django web app during my Infosys Springboard internship.</p>
+              </div>
+              <div class="project-spec">
+                <h4>Specifications</h4>
+                <dl>
+              <dt>Domain</dt>
+              <dd>Physiological signals</dd>
+              <dt>Result</dt>
+              <dd>93.3% accuracy</dd>
+                </dl>
+                <ul class="project-links">
+              <li><a href="https://github.com/abhishek-sriram/Infosys-Springboard-Internship-5.0" target="_blank" rel="noopener" data-cursor="Open">Repository</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+      <li class="project-row" id="project-courses" data-project="courses">
+        <details class="project-details">
+          <summary class="project-summary" aria-controls="case-file" aria-haspopup="dialog">
+            <span class="project-line">
+              <span class="project-no">04</span>
+              <span class="project-title">Course Recommender System</span>
+              <span class="project-tags"><span class="project-tag">Online courses</span></span>
+              <span class="project-result">+40% engagement</span>
+              <span class="project-mark" aria-hidden="true"></span>
+            </span>
+          </summary>
+          <div class="project-dossier">
+            <div class="case-top">
+              <button type="button" class="case-close">Close</button>
+            </div>
+            <h3 class="case-title" id="case-courses-title" tabindex="-1">Course Recommender System</h3>
+            <div class="case-layout">
+              <div class="project-copy">
+                <p>Personalized online‑course recommendation engine built with Scikit‑Learn and Scikit‑Surprise, lifting user engagement by 40%.</p>
+              </div>
+              <div class="project-spec">
+                <h4>Specifications</h4>
+                <dl>
+              <dt>Domain</dt>
+              <dd>Online courses</dd>
+              <dt>Result</dt>
+              <dd>+40% engagement</dd>
+                </dl>
+                <ul class="project-links">
+              <li><a href="https://github.com/abhishek-sriram/Personalized-Online-Course-Recommender-System" target="_blank" rel="noopener" data-cursor="Open">Repository</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+      </ol>
 
-    <nav class="contact-links" aria-label="Elsewhere">
-      <a class="link-arrow fx-underline" href="https://www.linkedin.com/in/abhishek-sriram-ds/" target="_blank" rel="noopener">LinkedIn</a>
-      <a class="link-arrow fx-underline" href="https://github.com/abhishek-sriram" target="_blank" rel="noopener">GitHub</a>
-      <a class="link-arrow fx-underline" href="https://drive.google.com/file/d/1ddiqAXpytsoOKVhqtTgkt3pZsqa_loIk/view" target="_blank" rel="noopener">Resume (PDF)</a>
-    </nav>
+      <div class="project-earlier">
+        <p class="label" id="earlier-work">Earlier work</p>
+        <ol class="project-rows" aria-labelledby="earlier-work">
+      <li class="project-row" id="project-spacex" data-project="spacex">
+        <details class="project-details">
+          <summary class="project-summary" aria-controls="case-file" aria-haspopup="dialog">
+            <span class="project-line">
+              <span class="project-no">05</span>
+              <span class="project-title">SpaceX Falcon 9 Landing Prediction</span>
+              <span class="project-tags"><span class="project-tag">First-stage landing</span></span>
+              <span class="project-result">91.1% accuracy</span>
+              <span class="project-mark" aria-hidden="true"></span>
+            </span>
+          </summary>
+          <div class="project-dossier">
+            <div class="case-top">
+              <button type="button" class="case-close">Close</button>
+            </div>
+            <h3 class="case-title" id="case-spacex-title" tabindex="-1">SpaceX Falcon 9 Landing Prediction</h3>
+            <div class="case-layout">
+              <div class="project-copy">
+                <p>ML models predicting Falcon 9 first‑stage landing success using the SpaceX API, Pandas and classical classifiers.</p>
+              </div>
+              <div class="project-spec">
+                <h4>Specifications</h4>
+                <dl>
+              <dt>Domain</dt>
+              <dd>First-stage landing</dd>
+              <dt>Result</dt>
+              <dd>91.1% accuracy</dd>
+                </dl>
+                <ul class="project-links">
+              <li><a href="https://github.com/abhishek-sriram/SpaceX-Falcon-9-Landing-Prediction" target="_blank" rel="noopener" data-cursor="Open">Repository</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+      <li class="project-row" id="project-sentiment" data-project="sentiment">
+        <details class="project-details">
+          <summary class="project-summary" aria-controls="case-file" aria-haspopup="dialog">
+            <span class="project-line">
+              <span class="project-no">06</span>
+              <span class="project-title">Sentiment Analysis on Movie Reviews</span>
+              <span class="project-tags"><span class="project-tag">NLP</span></span>
+              <span class="project-result is-gap">—</span>
+              <span class="project-mark" aria-hidden="true"></span>
+            </span>
+          </summary>
+          <div class="project-dossier">
+            <div class="case-top">
+              <button type="button" class="case-close">Close</button>
+            </div>
+            <h3 class="case-title" id="case-sentiment-title" tabindex="-1">Sentiment Analysis on Movie Reviews</h3>
+            <div class="case-layout">
+              <div class="project-copy">
+                <p>Naive Bayes sentiment classifier distinguishing positive from negative IMDB movie reviews.</p>
+              </div>
+              <div class="project-spec">
+                <h4>Specifications</h4>
+                <dl>
+              <dt>Domain</dt>
+              <dd>NLP</dd>
+              <dt>Result</dt>
+              <dd>—</dd>
+                </dl>
+                <ul class="project-links">
+              <li><a href="https://github.com/abhishek-sriram/Sentiment-Analysis-Movie-Reviews" target="_blank" rel="noopener" data-cursor="Open">Repository</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+        </ol>
+      </div>
+    </div>
   </div>
 
-  <div class="foot-bar">
-    <p class="foot-colophon">Set in Newsreader, Instrument Sans and JetBrains Mono. Built by hand with HTML, CSS and vanilla JS.</p>
-    <p class="foot-note">© <span id="year">2026</span> Abhishek Sriram. All rights reserved.</p>
-    <a href="#top" class="foot-top fx-underline">Back to top</a>
+</section>
+
+<section class="toolkit" id="toolkit" data-surface="paper" data-mode="layer" aria-labelledby="toolkit-title">
+  <div class="page">
+    <p class="label">Toolkit</p>
+    <h2 id="toolkit-title">Tools, by the layer they serve</h2>
+    <div class="toolkit-switch" role="radiogroup" aria-label="Group tools">
+      <button type="button" id="toolkit-mode-layer" role="radio" aria-checked="true" tabindex="0" data-mode="layer">By layer</button>
+      <button type="button" id="toolkit-mode-use" role="radio" aria-checked="false" tabindex="-1" data-mode="use">By use</button>
+      <span class="toolkit-live" aria-live="polite"></span>
+    </div>
+    <div class="toolkit-board" id="toolkit-board">
+      <div class="toolkit-static">
+        <h3>Data</h3>
+        <ul>
+          <li>MySQL</li>
+          <li>PostgreSQL</li>
+          <li>MongoDB</li>
+          <li>Apache Hadoop</li>
+          <li>Hive</li>
+          <li>Sqoop</li>
+          <li>Spark</li>
+          <li>Kafka</li>
+        </ul>
+        <h3>Models</h3>
+        <ul>
+          <li>PyTorch</li>
+          <li>TensorFlow</li>
+          <li>Keras</li>
+          <li>Scikit-learn</li>
+          <li>Gemini 2.0 Flash</li>
+          <li>LLaMA 3</li>
+          <li>ESRGAN</li>
+          <li>Tesseract OCR</li>
+          <li>ANN</li>
+          <li>Linear Regression</li>
+          <li>Random Forest</li>
+          <li>PCA</li>
+          <li>K‑Means</li>
+        </ul>
+        <h3>Retrieval</h3>
+        <ul>
+          <li>RAG</li>
+          <li>Pinecone</li>
+          <li>ChromaDB</li>
+        </ul>
+        <h3>Orchestration</h3>
+        <ul>
+          <li>LangChain</li>
+          <li>LangGraph</li>
+          <li>MCP</li>
+        </ul>
+        <h3>Serving</h3>
+        <ul>
+          <li>Python</li>
+          <li>FastAPI</li>
+          <li>Django</li>
+          <li>Docker</li>
+          <li>Kubernetes</li>
+          <li>Jenkins</li>
+        </ul>
+        <h3>Observability</h3>
+        <ul>
+          <li>Prometheus</li>
+          <li>Grafana</li>
+          <li>OpenTelemetry</li>
+        </ul>
+        <h3>Visualisation</h3>
+        <ul>
+          <li>Matplotlib</li>
+          <li>Seaborn</li>
+          <li>Plotly</li>
+          <li>Tableau</li>
+          <li>Power BI</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about" data-surface="cobalt" aria-labelledby="about-title">
+  <div class="page">
+    <p class="label">About</p>
+    <h2 id="about-title">Editor's note</h2>
+    <div class="about-statement">
+      <div class="about-prose">
+        <p class="about-lede">Most AI projects fail not because of the model, but because they never make it to production.</p>
+        <p class="about-life">I'm an AI Engineer with hands-on experience across the full lifecycle: data engineering, model development, deployment, monitoring and optimization. That work spans Generative AI, LLMs, Retrieval-Augmented Generation, NLP, classical Machine Learning, Agentic AI and MLOps—Python, PyTorch, TensorFlow, LangChain, LangGraph, MCP, FastAPI, Docker and Kubernetes—to turn research into something a real user can rely on.</p>
+        <p class="about-now">Currently building multimodal LLM-powered agents at <strong>Infobell IT</strong>, after shipping semantic search, multilingual chatbots and stress-detection systems across three prior AI/ML internships. I care about retrieval quality, latency, observability, and privacy as much as the model itself.</p>
+      </div>
+      <ul class="about-facts">
+        <li>Based in Bengaluru, India</li>
+        <li>Focus: LLMs, RAG, Agentic AI</li>
+        <li>Open to: AI, ML and GenAI Engineer roles</li>
+      </ul>
+    </div>
+    <h3 class="about-optimise">What I optimise for</h3>
+    <dl class="principles">
+      <div class="principle" data-principle="retrieval">
+        <svg class="principle-mark" viewBox="0 0 96 64" aria-hidden="true">
+          <circle class="retrieval-core" cx="62" cy="34" r="2.3"/>
+          <circle class="retrieval-dot" cx="62" cy="34" r="1.7" data-start="9,11"/>
+          <circle class="retrieval-dot" cx="62" cy="34" r="1.45" data-start="16,51"/>
+          <circle class="retrieval-dot" cx="62" cy="34" r="1.6" data-start="28,13"/>
+          <circle class="retrieval-dot" cx="62" cy="34" r="1.35" data-start="20,36"/>
+          <circle class="retrieval-dot" cx="62" cy="34" r="1.55" data-start="40,54"/>
+          <circle class="retrieval-dot" cx="62" cy="34" r="1.4" data-start="46,15"/>
+        </svg>
+        <dt>Retrieval quality</dt>
+        <dd>How reliably the system surfaces the right context before the model answers.</dd>
+      </div>
+      <div class="principle" data-principle="latency">
+        <svg class="principle-mark" viewBox="0 0 96 64" aria-hidden="true">
+          <path class="latency-line" d="M8 34C18 27 24 42 36 33C48 24 55 41 67 31C76 24 83 39 90 32"/>
+          <circle class="latency-pulse" cx="90" cy="32" r="2.5"/>
+        </svg>
+        <dt>Latency</dt>
+        <dd>How long a user waits before getting a useful response.</dd>
+      </div>
+      <div class="principle" data-principle="observability">
+        <svg class="principle-mark" viewBox="0 0 96 64" aria-hidden="true">
+          <path class="observability-line" d="M7 48L15 41L23 45L31 27L39 35L49 16L57 27L67 12L75 21L89 8"/>
+        </svg>
+        <dt>Observability</dt>
+        <dd>Being able to see what the system did, and where it went wrong.</dd>
+      </div>
+      <div class="principle" data-principle="privacy">
+        <svg class="principle-mark" viewBox="0 0 96 64" aria-hidden="true">
+          <path class="privacy-bound" d="M18 18C32 11 58 13 78 16C84 28 83 40 76 48C58 55 34 52 18 46C12 36 12 26 18 18Z"/>
+          <circle class="privacy-dot" cx="42" cy="32" r="1.7" data-start="30,27" data-mid="33,39"/>
+          <circle class="privacy-dot" cx="58" cy="36" r="1.45" data-start="66,29" data-mid="50,27"/>
+          <circle class="privacy-dot" cx="48" cy="25" r="1.55" data-start="35,34" data-mid="61,33"/>
+        </svg>
+        <dt>Privacy</dt>
+        <dd>Keeping user and proprietary data out of places it should not go.</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<section class="credentials" id="credentials" data-surface="paper" aria-labelledby="credentials-title">
+  <div class="page">
+    <p class="label">Credentials</p>
+    <h2 id="credentials-title">References</h2>
+    <ul class="credential-list">
+      <li class="credential-row">
+        <div class="credential-face">
+          <p class="credential-key">Citation</p>
+          <p class="credential-body">Abhishek Sriram, Ishwarya K, <cite>MindPulse: A Multimodal AI Framework for Early Detection of Mental Health Crisis in Young Adults</cite>. IEEE Xplore. 2026. <a href="https://ieeexplore.ieee.org/document/11554646" target="_blank" rel="noopener" data-cursor="Open">Read the paper</a></p>
+        </div>
+      </li>
+      <li class="credential-row" tabindex="0">
+        <div class="credential-face">
+          <p class="credential-key">Education</p>
+          <p class="credential-body">M.Tech Data Science · SRM IST Chennai · 2023-2026</p>
+        </div>
+      </li>
+      <li class="credential-row" tabindex="0">
+        <div class="credential-face">
+          <p class="credential-key">Education</p>
+          <p class="credential-body">B.Tech Electrical and Electronics Engineering · Shanmugha Arts, Science, Technology and Research Academy · 2018-2022</p>
+        </div>
+      </li>
+      <li class="credential-row">
+        <div class="credential-face">
+          <p class="credential-key">Certification</p>
+          <p class="credential-body">IBM / Coursera · <a href="https://www.coursera.org/account/accomplishments/professional-cert/certificate/VPC7NMN2PNAD" target="_blank" rel="noopener" data-cursor="Open">IBM RAG and Agentic AI</a></p>
+        </div>
+      </li>
+      <li class="credential-row">
+        <div class="credential-face">
+          <p class="credential-key">Certification</p>
+          <p class="credential-body">IBM / Coursera · <a href="https://www.coursera.org/account/accomplishments/specialization/5NXFMXSFB3ZC" target="_blank" rel="noopener" data-cursor="Open">IBM Generative AI Engineering</a></p>
+        </div>
+      </li>
+      <li class="credential-row">
+        <div class="credential-face">
+          <p class="credential-key">Certification</p>
+          <p class="credential-body">IBM / Coursera · <a href="https://www.coursera.org/account/accomplishments/specialization/2LSFASPTBKLM" target="_blank" rel="noopener" data-cursor="Open">IBM Data Science Professional Certificate</a></p>
+        </div>
+      </li>
+      <li class="credential-row">
+        <div class="credential-face">
+          <p class="credential-key">Certification</p>
+          <p class="credential-body">IBM / Coursera · <a href="https://www.coursera.org/account/accomplishments/specialization/ACPOW8H9IVWY" target="_blank" rel="noopener" data-cursor="Open">IBM DevOps and Software Engineering Professional Certificate</a></p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="contact" id="contact" data-surface="acid" aria-labelledby="contact-title">
+  <div class="page">
+    <p class="label">Correspondence</p>
+    <h2 id="contact-title" class="contact-title">Say hello.</h2>
+    <div class="contact-reach">
+      <a class="contact-email" href="mailto:abhisriram15@gmail.com" data-magnet="0.18">abhisriram15@gmail.com</a>
+      <button type="button" class="contact-copy" data-copy-email="abhisriram15@gmail.com" data-cursor="Copy">
+        <svg class="contact-check" viewBox="0 0 24 24" aria-hidden="true">
+          <path pathLength="1" d="M3.2 12.8C5.6 14.2 6.4 17.8 8.9 18.6C12.4 13.2 15.1 8.4 21.3 4.4"/>
+        </svg>
+        <span>Copy</span>
+      </button>
+      <span id="copyStatus" class="contact-copied" aria-live="polite"></span>
+    </div>
+    <nav class="contact-links" aria-label="Elsewhere">
+      <a href="https://www.linkedin.com/in/abhishek-sriram-ds/" target="_blank" rel="noopener" data-cursor="Open">LinkedIn</a>
+      <a href="https://github.com/abhishek-sriram" target="_blank" rel="noopener" data-cursor="Open">GitHub</a>
+      <a href="https://drive.google.com/file/d/1ddiqAXpytsoOKVhqtTgkt3pZsqa_loIk/view" target="_blank" rel="noopener" data-cursor="Open">Resume (PDF)</a>
+    </nav>
+    <div class="contact-availability">
+      <p class="contact-local">
+        <time class="contact-clock" datetime="">––:––:––</time>
+        <span class="label">Bengaluru</span>
+      </p>
+      <p class="contact-open">Hiring for AI Engineer, ML Engineer, Generative AI Engineer, Applied AI, NLP or LLM‑focused roles? I'd like to hear from you.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer" data-surface="ink">
+  <div class="page">
+    <span class="footer-rule" aria-hidden="true"></span>
+    <p class="footer-copy span-5">© <span id="year">2026</span> Abhishek Sriram. All rights reserved.</p>
+    <p class="footer-stack span-4">HTML · CSS · GSAP · Lenis</p>
+    <a class="footer-top span-3" href="#hero">Back to top</a>
   </div>
 </footer>
 
+<nav class="rail" aria-label="Sections">
+  <ol>
+    <li><a class="rail-tick" href="#hero" data-rail="hero"><span class="rail-mark" aria-hidden="true"></span><span class="rail-label">Applied AI Field Journal</span></a></li>
+    <li><a class="rail-tick" href="#systems" data-rail="systems"><span class="rail-mark" aria-hidden="true"></span><span class="rail-label">Systems</span></a></li>
+    <li><a class="rail-tick" href="#experience" data-rail="experience"><span class="rail-mark" aria-hidden="true"></span><span class="rail-label">Experience</span></a></li>
+    <li><a class="rail-tick" href="#projects" data-rail="projects"><span class="rail-mark" aria-hidden="true"></span><span class="rail-label">Projects</span></a></li>
+    <li><a class="rail-tick" href="#toolkit" data-rail="toolkit"><span class="rail-mark" aria-hidden="true"></span><span class="rail-label">Toolkit</span></a></li>
+    <li><a class="rail-tick" href="#about" data-rail="about"><span class="rail-mark" aria-hidden="true"></span><span class="rail-label">About</span></a></li>
+    <li><a class="rail-tick" href="#credentials" data-rail="credentials"><span class="rail-mark" aria-hidden="true"></span><span class="rail-label">Credentials</span></a></li>
+    <li><a class="rail-tick" href="#contact" data-rail="contact"><span class="rail-mark" aria-hidden="true"></span><span class="rail-label">Contact</span></a></li>
+  </ol>
+</nav>
+
+<dialog class="case-file" id="case-file"></dialog>
+
+<script src="vendor/gsap.min.js" defer></script>
+<script src="vendor/ScrollTrigger.min.js" defer></script>
+<script src="vendor/Flip.min.js" defer></script>
+<script src="vendor/lenis.min.js" defer></script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
