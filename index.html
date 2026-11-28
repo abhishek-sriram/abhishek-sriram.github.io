@@ -91,7 +91,8 @@ try {
   </div>
 </header>
 
-<div id="index-overlay" class="index-overlay" role="dialog" aria-modal="true" aria-label="Index" hidden>
+<!-- data-lenis-prevent: while this is open Lenis is stopped, and a stopped Lenis cancels wheel events. Without this, a touchpad cannot scroll the list. -->
+<div id="index-overlay" class="index-overlay" role="dialog" aria-modal="true" aria-label="Index" data-lenis-prevent hidden>
   <nav aria-label="Index">
     <ol>
       <li class="index-line"><a class="display" href="#hero">Applied AI Field Journal</a></li>
