@@ -30,6 +30,11 @@
   --ease-snap: cubic-bezier(.2, .9, .1, 1);
   --ease-glide: cubic-bezier(.65, 0, .35, 1);
 
+  --z-back: -1;
+  --z-base: 0;
+  --z-raised: 1;
+  --z-float: 2;
+
   --duration-surface: 500ms;
   --duration-reveal: 700ms;
   --duration-ui: 220ms;
@@ -38,4 +43,11 @@
   --duration-token: 160ms;
   --duration-credential: 780ms;
   --duration-index: 180ms;
+  --duration-letter: 0.72s;
+  --duration-query: 0.6s;
+  --duration-results: 0.46s;
+  --duration-slit: 0.6s;
+  --delay-letter: 0.04s;
+  --delay-query: 0.7s;
+  --delay-group: 0.055s;
 }

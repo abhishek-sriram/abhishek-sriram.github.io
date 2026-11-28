@@ -21,7 +21,10 @@ export const duration = {
   count: 0.9,
   fieldIntro: 1.8,
   fieldLine: 0.6,
+  fieldDolly: 1.2,
+  fieldRing: 0.9,
   systemWipe: 0.55,
+  explode: 0.9,
   stepper: 0.9,
   crumb: 0.7,
   trace: 0.5,
@@ -51,6 +54,10 @@ export const duration = {
   token: 0.16,
   credential: 0.78,
   index: 0.18,
+  decode: 0.4,
+  iris: 0.7,
+  titleIn: 0.85,
+  marquee: 0.35,
 };
 
 export const delay = {
@@ -61,9 +68,34 @@ export const delay = {
   railTick: 0.04,
   row: 0.045,
   group: 0.055,
+  explode: 0.08,
   key: 0.04,
   fieldLine: 0.1,
   placeholder: 2.6,
+  decode: 0.032,
+  titleLetter: 0.028,
+  titleWord: 0.08,
+};
+
+/** Seconds before the same tag may decode again. */
+export const decodeCooldown = 8;
+
+/**
+ * Display and text faces. Bricolage's width axis starts at 75, so 70 clamps there.
+ * Martian Mono is loaded from 300 so the about title can actually begin that light.
+ */
+export const titleAxis = {
+  wdthFrom: 70,
+  wdthTo: 100,
+  wghtFrom: 300,
+  wghtTo: 700,
+  follow: 0.42,
+};
+
+/** About title tracking, in em. The settled value matches the stylesheet. */
+export const tracking = {
+  from: "0.28em",
+  to: "0.04em",
 };
 
 /** Pixels. The incoming surface wipes across this overlap. */
@@ -76,6 +108,8 @@ export const skewMax = 3;
 export const velocity = {
   deadzone: 8,
   ceil: 64,
+  /** Marquee travel per pixel of Lenis velocity. */
+  marquee: 0.72,
 };
 
 /** Extra yaw on the hero field at full scroll speed. */

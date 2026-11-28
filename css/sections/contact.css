@@ -22,11 +22,13 @@
 }
 
 .contact-title {
+  --wdth: 100;
+  --wght: 700;
   max-width: none;
   margin-top: 0.2rem;
   font-optical-sizing: none;
-  font-weight: 560;
-  font-variation-settings: "opsz" 96, "wdth" 88, "wght" 560;
+  font-weight: var(--wght);
+  font-variation-settings: "opsz" 96, "wdth" var(--wdth), "wght" var(--wght);
   font-size: clamp(2.7rem, 13vw, 11rem);
   line-height: 0.84;
   letter-spacing: -0.055em;
@@ -41,9 +43,15 @@
   margin-top: clamp(1.1rem, 3vh, 1.8rem);
 }
 
+.contact-glyph {
+  display: inline-block;
+  white-space: pre;
+  transform-origin: center center;
+}
+
 .contact-email {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-raised);
   display: inline-block;
   max-width: 100%;
   font-family: var(--font-display);
@@ -67,6 +75,7 @@
 .contact-copy {
   display: inline-flex;
   align-items: center;
+  transform-origin: center center;
   gap: 0.4rem;
   font-family: var(--font-mono);
   font-size: var(--step-label);

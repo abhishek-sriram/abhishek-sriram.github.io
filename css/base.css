@@ -90,9 +90,35 @@ html.surface-immediate a {
   transition: none;
 }
 
+/* 5% overlay keeps ink and paper text above 4.5:1. Acid is left bare. */
+html.has-grain :is(section, footer)[data-surface="cobalt"],
+html.has-grain :is(section, footer)[data-surface="ink"] {
+  position: relative;
+  isolation: isolate;
+}
+
+html.has-grain :is(section, footer)[data-surface="cobalt"]::after,
+html.has-grain :is(section, footer)[data-surface="ink"]::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: var(--grain-tile);
+  background-repeat: repeat;
+  background-position: var(--grain-x, 0px) var(--grain-y, 0px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  html.has-grain :is(section, footer)[data-surface="cobalt"]::after,
+  html.has-grain :is(section, footer)[data-surface="ink"]::after {
+    content: none;
   }
 
   *,

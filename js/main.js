@@ -1,39 +1,106 @@
-import { initChrome } from "./core/chrome.js";
-import { initCursor } from "./core/cursor.js";
-import { initHandoff } from "./core/handoff.js";
-import { initLoad } from "./core/load.js";
-import { initMagnet } from "./core/magnet.js";
 import { applyMotionConfig, prefersReducedMotion } from "./core/motion.js";
-import { initScroll } from "./core/scroll.js";
-import { initVelocity } from "./core/velocity.js";
-import { queryIndex } from "./data/index.js";
-import { systems } from "./data/systems.js";
-import { initAbout } from "./sections/about.js";
-import { initContact } from "./sections/contact.js";
-import { initCredentials } from "./sections/credentials.js";
-import { initFooter } from "./sections/footer.js";
-import { initExperience } from "./sections/experience.js";
-import { initHero } from "./sections/hero.js";
-import { initProjects } from "./sections/projects.js";
-import { initSystems } from "./sections/systems.js";
-import { initToolkit } from "./sections/toolkit.js";
+import { noteFrame, qualityProfile, qualityTier } from "./core/quality.js";
 
 document.documentElement.dataset.motion = prefersReducedMotion() ? "reduce" : "full";
+document.documentElement.dataset.tier = qualityTier();
 applyMotionConfig();
+globalThis.__quality = { tier: qualityTier, profile: qualityProfile, noteFrame };
 
-initScroll();
-initChrome();
-initCursor();
-initMagnet();
-const heroMotion = initHero(queryIndex);
-initSystems(systems);
-initExperience();
-initProjects();
-initToolkit();
-initAbout();
-initCredentials();
-initContact();
-initFooter();
-initHandoff();
-initVelocity();
-initLoad(heroMotion);
+function turn() {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
+}
+
+await turn();
+
+const [
+  scrollMod,
+  irisMod,
+  chromeMod,
+  cursorMod,
+  grainMod,
+  magnetMod,
+  heroMod,
+  indexMod,
+  systemsMod,
+  systemsData,
+  experienceMod,
+  projectsMod,
+  toolkitMod,
+  aboutMod,
+  credentialsMod,
+  contactMod,
+  footerMod,
+  handoffMod,
+  velocityMod,
+  outlineMod,
+  decodeMod,
+  marqueeMod,
+  titlesMod,
+  loadMod,
+] = await Promise.all([
+  import("./core/scroll.js"),
+  import("./core/iris.js"),
+  import("./core/chrome.js"),
+  import("./core/cursor.js"),
+  import("./core/grain.js"),
+  import("./core/magnet.js"),
+  import("./sections/hero.js"),
+  import("./data/index.js"),
+  import("./sections/systems.js"),
+  import("./data/systems.js"),
+  import("./sections/experience.js"),
+  import("./sections/projects.js"),
+  import("./sections/toolkit.js"),
+  import("./sections/about.js"),
+  import("./sections/credentials.js"),
+  import("./sections/contact.js"),
+  import("./sections/footer.js"),
+  import("./core/handoff.js"),
+  import("./core/velocity.js"),
+  import("./core/outline.js"),
+  import("./core/decode.js"),
+  import("./core/marquee.js"),
+  import("./core/titles.js"),
+  import("./core/load.js"),
+]);
+
+await turn();
+
+scrollMod.initScroll();
+irisMod.initIris();
+await turn();
+
+chromeMod.initChrome();
+cursorMod.initCursor();
+grainMod.initGrain();
+magnetMod.initMagnet();
+await turn();
+
+const heroMotion = heroMod.initHero(indexMod.queryIndex);
+await turn();
+
+systemsMod.initSystems(systemsData.systems);
+await turn();
+
+experienceMod.initExperience();
+projectsMod.initProjects();
+await turn();
+
+toolkitMod.initToolkit();
+aboutMod.initAbout();
+credentialsMod.initCredentials();
+contactMod.initContact();
+footerMod.initFooter();
+await turn();
+
+handoffMod.initHandoff();
+velocityMod.initVelocity();
+outlineMod.initOutline();
+decodeMod.initDecode();
+marqueeMod.initMarquee();
+titlesMod.initTitles();
+await turn();
+
+loadMod.initLoad(heroMotion);

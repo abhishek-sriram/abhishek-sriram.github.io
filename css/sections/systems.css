@@ -17,7 +17,6 @@
   overflow-anchor: none;
   padding: calc(var(--anchor-offset) + 0.35rem) var(--page-pad) 1rem;
   background-color: var(--ink);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M0 .5H48M.5 0V48' fill='none' stroke='%23ffffff' stroke-opacity='.06' stroke-width='1'/%3E%3C/svg%3E");
   color: var(--paper);
 }
 
@@ -110,7 +109,7 @@
   line-height: 0.92;
   letter-spacing: -0.04em;
   text-align: left;
-  color: rgb(255 255 255 / 36%);
+  color: var(--grey);
   cursor: pointer;
 }
 
@@ -171,14 +170,76 @@
 
 .diagram {
   position: relative;
-  display: flex;
-  align-items: center;
+  z-index: var(--z-base);
   height: 100%;
 }
 
+.stack {
+  --plane-gap: 140px;
+  position: relative;
+  z-index: var(--z-raised);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  perspective-origin: 50% 50%;
+}
+
+.stack.is-spatial {
+  perspective: 1600px;
+}
+
+.stack-pivot {
+  position: relative;
+  width: 100%;
+  transform-origin: center center;
+}
+
+.stack.is-spatial .stack-pivot,
+.stack.is-spatial .planes,
+.stack.is-spatial .diagram-nodes,
+.stack.is-spatial .risers,
+.stack.is-spatial .plane,
+.stack.is-spatial .node,
+.stack.is-spatial .riser-anchor {
+  transform-style: preserve-3d;
+}
+
+.stack.is-moving .stack-pivot,
+.stack.is-moving .plane,
+.stack.is-moving .node,
+.stack.is-moving .riser {
+  will-change: transform;
+}
+
+.planes,
+.risers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.plane {
+  position: absolute;
+  inset: 0;
+}
+
+.plane-slab {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #fff;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M0 .5H48M.5 0V48' fill='none' stroke='%23ffffff' stroke-opacity='.16' stroke-width='1'/%3E%3C/svg%3E");
+  opacity: 0;
+}
+
+.plane.is-chosen .plane-slab {
+  border-color: var(--acid);
+}
+
+.plane-draw,
 .diagram-draw {
   position: absolute;
-  z-index: 2;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -186,7 +247,9 @@
   pointer-events: none;
 }
 
-.diagram-draw path {
+.diagram-draw path,
+.plane-draw path,
+.node-frame path {
   fill: none;
   stroke: #fff;
   stroke-width: 1px;
@@ -194,6 +257,90 @@
   stroke-linejoin: miter;
   vector-effect: non-scaling-stroke;
   shape-rendering: crispEdges;
+}
+
+.riser {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  border-top: 1px dashed rgb(255 255 255 / 72%);
+  transform-origin: left center;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.riser.is-hot {
+  border-top-color: var(--acid);
+}
+
+.riser-anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.riser-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: rgb(255 255 255 / 72%);
+  white-space: nowrap;
+  transform: translate(-50%, -140%);
+}
+
+/* Rightmost function runs first, so this undoes the pivot's rotateX, then rotateY, then rotateZ. */
+.stack.is-spatial .node-name {
+  transform:
+    scale(var(--label-sharp, 1))
+    rotateZ(calc(var(--spin-z) * -1))
+    rotateY(calc(var(--spin-y) * -1))
+    rotateX(calc(var(--spin-x) * -1));
+  transform-origin: center center;
+  background: var(--ink);
+  padding: 0.08em 0.22em;
+}
+
+.stack.is-spatial .riser-label {
+  transform:
+    translate(-50%, -140%)
+    rotateZ(calc(var(--spin-z) * -1))
+    rotateY(calc(var(--spin-y) * -1))
+    rotateX(calc(var(--spin-x) * -1));
+  transform-origin: center center;
+}
+
+.trace-pulse,
+.pulse-crumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--acid);
+  pointer-events: none;
+}
+
+.trace-pulse {
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  margin-top: -3.5px;
+  opacity: 0;
+}
+
+.pulse-crumb {
+  width: 4.5px;
+  height: 4.5px;
+  margin-left: -2.25px;
+  margin-top: -2.25px;
 }
 
 .edge-label {
@@ -211,7 +358,6 @@
 
 .diagram-nodes {
   position: relative;
-  z-index: 1;
   display: grid;
   width: 100%;
   grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr));
@@ -221,6 +367,7 @@
 }
 
 .node {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -231,6 +378,30 @@
   color: var(--paper);
   text-align: center;
   cursor: pointer;
+}
+
+.node-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.node-stamp {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 6px;
+  height: 6px;
+  background: var(--acid);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.node.is-stamped .node-stamp {
+  opacity: 1;
 }
 
 .node[hidden] {
@@ -304,9 +475,30 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem 1.5rem;
   margin-top: 0.75rem;
+}
+
+.view-switch {
+  display: flex;
+}
+
+.view-switch button {
+  padding: 0.4rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  letter-spacing: 0.04em;
+  color: rgb(255 255 255 / 62%);
+  cursor: pointer;
+}
+
+.view-switch button[aria-pressed="true"] {
+  background: var(--acid);
+  color: var(--ink);
+}
+
+.workbench[data-mode="story"] .view-switch button {
+  cursor: default;
 }
 
 .workbench[data-mode="story"] .workbench-controls {
@@ -338,6 +530,7 @@
 }
 
 .trace-request {
+  margin-left: auto;
   color: var(--paper);
   border-bottom: 1px solid var(--acid);
 }
@@ -508,11 +701,32 @@
   .workbench-controls {
     margin-top: 1.25rem;
   }
+
+  .view-switch {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .stepper {
     --line: 1;
+  }
+
+  .view-switch {
+    display: none;
+  }
+
+  .stack {
+    perspective: none;
+  }
+
+  .stack-pivot,
+  .plane,
+  .node,
+  .node-name,
+  .riser,
+  .riser-label {
+    transform: none !important;
   }
 }
 

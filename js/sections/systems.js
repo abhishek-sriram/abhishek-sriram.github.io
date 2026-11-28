@@ -1,10 +1,53 @@
 import { clamp } from "../core/clamp.js";
-import { duration, ease } from "../core/motion.config.js";
+import { delay, duration, ease } from "../core/motion.config.js";
 import { prefersReducedMotion } from "../core/motion.js";
+import { onPageVisibility, pageHidden } from "../core/quality.js";
 import { getLenis } from "../core/scroll.js";
 import { svgElement } from "../core/svg.js";
 
 const mobileQuery = window.matchMedia("(max-width: 719px)");
+const planeGap = 140;
+const raised = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--z-raised")) || 1;
+const selectedLift = raised * 24;
+const storySplit = 0.82;
+const kindOrder = [
+  { id: "io", kinds: ["input", "output"] },
+  { id: "service", kinds: ["service"] },
+  { id: "model", kinds: ["model"] },
+  { id: "store", kinds: ["store"] },
+  { id: "monitor", kinds: ["monitor"] },
+];
+
+/* glide is the CSS timing function. GSAP cannot parse cubic-bezier. */
+function glideUnit(amount) {
+  if (amount <= 0) return 0;
+  if (amount >= 1) return 1;
+  const stops = ease.glide.match(/[\d.]+/g).map(Number);
+  const [x1, y1, x2, y2] = stops.length === 4 ? stops : [0.65, 0, 0.35, 1];
+  const cx = 3 * x1;
+  const bx = 3 * (x2 - x1) - cx;
+  const ax = 1 - cx - bx;
+  const cy = 3 * y1;
+  const by = 3 * (y2 - y1) - cy;
+  const ay = 1 - cy - by;
+  const sampleX = (unit) => ((ax * unit + bx) * unit + cx) * unit;
+  const sampleY = (unit) => ((ay * unit + by) * unit + cy) * unit;
+  const slopeX = (unit) => (3 * ax * unit + 2 * bx) * unit + cx;
+  let unit = amount;
+  for (let i = 0; i < 6; i += 1) {
+    const error = sampleX(unit) - amount;
+    if (Math.abs(error) < 1e-5) break;
+    const slope = slopeX(unit);
+    if (Math.abs(slope) < 1e-5) break;
+    unit = clamp(unit - error / slope, 0, 1);
+  }
+  return sampleY(unit);
+}
+
+function planeKey(kind) {
+  if (kind === "input" || kind === "output") return "io";
+  return kind;
+}
 
 const componentFacts = [
   ["what", "What"],
@@ -50,6 +93,12 @@ export function initSystems(systems) {
   const systemColumn = workbench.querySelector(".system-column");
   const diagramColumn = workbench.querySelector(".diagram-column");
   const diagram = workbench.querySelector(".diagram");
+  const stack = workbench.querySelector(".stack");
+  const pivot = workbench.querySelector(".stack-pivot");
+  const planesRoot = workbench.querySelector(".planes");
+  const risersRoot = workbench.querySelector(".risers");
+  const tracePulse = workbench.querySelector(".trace-pulse");
+  const viewSwitch = workbench.querySelector(".view-switch");
   const svg = workbench.querySelector(".diagram-draw");
   const nodesRoot = workbench.querySelector(".diagram-nodes");
   const stepper = workbench.querySelector(".stepper");
@@ -72,9 +121,22 @@ export function initSystems(systems) {
   const edgePaths = new Map();
   const edgeLabels = new Map();
   const charSpans = new Map();
-  const stampMarks = new Map();
   const stamped = new Set();
   let travelPaths = [];
+  let planeList = [];
+  let planeById = new Map();
+  let riserEntries = [];
+  let crossGroup = null;
+  let spinAmount = 0;
+  let view = "flat";
+  let spreadFrame = 0;
+  let tiltX = 0;
+  let tiltY = 0;
+  let aimX = 0;
+  let aimY = 0;
+  let tiltFrame = 0;
+  let tiltStamp = 0;
+  let fitMemo = { key: "", scale: 1, x: 0, y: 0 };
 
   let current = null;
   let selectedId = null;
@@ -109,6 +171,10 @@ export function initSystems(systems) {
 
   function reduced() {
     return prefersReducedMotion();
+  }
+
+  function canSpatial() {
+    return Boolean(stack && pivot && planesRoot) && !mobileQuery.matches && !reduced();
   }
 
   function storyWanted() {
@@ -204,17 +270,59 @@ export function initSystems(systems) {
   }
 
   function clearDraw() {
+    cancelSpread();
     svg.replaceChildren();
     nodesRoot.replaceChildren();
+    planesRoot?.replaceChildren();
+    risersRoot?.replaceChildren();
     stepper.replaceChildren();
     nodeButtons.clear();
     outlinePaths.clear();
     edgePaths.clear();
     edgeLabels.clear();
     charSpans.clear();
-    stampMarks.clear();
+    planeList = [];
+    planeById = new Map();
+    riserEntries = [];
+    crossGroup = null;
     traceDot = null;
     travelPaths = [];
+    if (tracePulse) {
+      tracePulse.style.opacity = "0";
+      tracePulse.hidden = true;
+    }
+  }
+
+  function buildPlanes() {
+    const visible = (current?.nodes || []).filter(layerOn);
+    kindOrder.forEach((group) => {
+      if (!visible.some((node) => group.kinds.includes(node.kind))) return;
+      const plane = document.createElement("div");
+      plane.className = "plane";
+      plane.dataset.plane = group.id;
+      const slab = document.createElement("div");
+      slab.className = "plane-slab";
+      const draw = svgElement("svg");
+      draw.setAttribute("class", "plane-draw");
+      draw.setAttribute("aria-hidden", "true");
+      const edges = svgElement("g");
+      const labels = svgElement("g");
+      draw.append(edges, labels);
+      plane.append(slab, draw);
+      planesRoot.append(plane);
+      const record = {
+        id: group.id,
+        element: plane,
+        slab,
+        draw,
+        edges,
+        labels,
+        amount: spinAmount,
+        z: 0,
+      };
+      planeList.push(record);
+      planeById.set(group.id, record);
+    });
   }
 
   function makePath(className) {
@@ -240,10 +348,11 @@ export function initSystems(systems) {
     linedSystem = system.id;
     stepper.style.setProperty("--line", drawLine ? "0" : "1");
 
-    const edgeGroup = svgElement("g");
-    const outlineGroup = svgElement("g");
-    const labelGroup = svgElement("g");
-    const stampGroup = svgElement("g");
+    buildPlanes();
+    crossGroup = svgElement("g");
+    crossGroup.setAttribute("class", "cross-edges");
+    const crossLabels = svgElement("g");
+    crossGroup.append(crossLabels);
     const crumbGroup = svgElement("g");
     crumbGroup.setAttribute("class", "trace-crumbs");
     traceDot = svgElement("circle");
@@ -256,11 +365,23 @@ export function initSystems(systems) {
       button.type = "button";
       button.className = "node";
       button.dataset.id = node.id;
+      button.dataset.plane = planeKey(node.kind);
+      button.dataset.depth = "0";
       button.style.gridColumn = String(node.col + 1);
       button.style.gridRow = String(node.row + 1);
       button.setAttribute("aria-label", `${node.label}, ${node.kind}`);
       button.setAttribute("aria-pressed", "false");
       button.setAttribute("aria-controls", "component-brief");
+      if (stamped.has(node.id)) button.classList.add("is-stamped");
+      const frame = svgElement("svg");
+      frame.setAttribute("class", "node-frame");
+      frame.setAttribute("aria-hidden", "true");
+      frame.setAttribute("viewBox", "0 0 100 100");
+      frame.setAttribute("preserveAspectRatio", "none");
+      const outline = makePath("node-outline");
+      outline.dataset.node = node.id;
+      outline.setAttribute("d", "M1 1H99V99H1Z");
+      frame.append(outline);
       const name = document.createElement("span");
       name.className = "node-name";
       name.setAttribute("aria-hidden", "true");
@@ -273,43 +394,63 @@ export function initSystems(systems) {
         name.append(span);
         chars.push(span);
       }
-      button.append(name);
+      const stampMark = document.createElement("span");
+      stampMark.className = "node-stamp";
+      stampMark.setAttribute("aria-hidden", "true");
+      button.append(frame, name, stampMark);
       nodesRoot.append(button);
       nodeButtons.set(node.id, button);
       charSpans.set(node.id, chars);
-
-      const outline = makePath("node-outline");
-      outline.dataset.node = node.id;
-      outlineGroup.append(outline);
       outlinePaths.set(node.id, outline);
-
-      const mark = svgElement("rect");
-      mark.setAttribute("class", "stamp-mark");
-      mark.setAttribute("width", "6");
-      mark.setAttribute("height", "6");
-      mark.setAttribute("opacity", "0");
-      stampGroup.append(mark);
-      stampMarks.set(node.id, mark);
     });
 
     system.edges.forEach((edge, index) => {
+      const from = system.nodes.find((node) => node.id === edge.from);
+      const to = system.nodes.find((node) => node.id === edge.to);
+      const shared = from && to && planeKey(from.kind) === planeKey(to.kind);
+      const plane = shared ? planeById.get(planeKey(from.kind)) : null;
       const path = makePath("edge-line");
       path.dataset.from = edge.from;
       path.dataset.to = edge.to;
       path.dataset.index = String(index);
-      edgeGroup.append(path);
+      (plane ? plane.edges : crossGroup).append(path);
       edgePaths.set(index, path);
-      if (!edge.label) return;
-      const text = svgElement("text");
-      text.setAttribute("class", "edge-label");
-      text.setAttribute("text-anchor", "middle");
-      text.setAttribute("opacity", "0");
-      text.textContent = edge.label;
-      labelGroup.append(text);
-      edgeLabels.set(index, text);
+      if (edge.label) {
+        const text = svgElement("text");
+        text.setAttribute("class", "edge-label");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("opacity", "0");
+        text.textContent = edge.label;
+        (plane ? plane.labels : crossLabels).append(text);
+        edgeLabels.set(index, text);
+      }
+      if (plane || !from || !to) return;
+      const vertical = document.createElement("span");
+      vertical.className = "riser";
+      const across = document.createElement("span");
+      across.className = "riser";
+      risersRoot.append(vertical, across);
+      let anchor = null;
+      if (edge.label) {
+        anchor = document.createElement("span");
+        anchor.className = "riser-anchor";
+        const label = document.createElement("span");
+        label.className = "riser-label";
+        label.textContent = edge.label;
+        anchor.append(label);
+        risersRoot.append(anchor);
+      }
+      riserEntries.push({ edge, vertical, across, anchor });
     });
 
-    svg.append(edgeGroup, outlineGroup, labelGroup, stampGroup, crumbGroup, traceDot);
+    svg.append(crossGroup, crumbGroup, traceDot);
+    if (mode !== "story") {
+      const settled = view === "exploded" && canSpatial() ? 1 : 0;
+      spinAmount = settled;
+      planeList.forEach((plane) => {
+        plane.amount = settled;
+      });
+    }
 
     const shown = system.nodes.filter(layerOn);
     shown.forEach((node, index) => {
@@ -420,25 +561,13 @@ export function initSystems(systems) {
     });
   }
 
+  /* Layout boxes ignore the 3D transform, so edges stay put while the stack turns. */
   function boxOf(button) {
-    const bounds = svg.getBoundingClientRect();
-    const rect = button.getBoundingClientRect();
-    return {
-      x: rect.left - bounds.left,
-      y: rect.top - bounds.top,
-      w: rect.width,
-      h: rect.height,
-      cx: rect.left - bounds.left + rect.width / 2,
-      cy: rect.top - bounds.top + rect.height / 2,
-    };
-  }
-
-  function rectPath(box) {
-    const x = box.x + 0.5;
-    const y = box.y + 0.5;
-    const w = Math.max(0, box.w - 1);
-    const h = Math.max(0, box.h - 1);
-    return `M${x} ${y}H${x + w}V${y + h}H${x}Z`;
+    const w = button.offsetWidth;
+    const h = button.offsetHeight;
+    const x = button.offsetLeft + nodesRoot.offsetLeft;
+    const y = button.offsetTop + nodesRoot.offsetTop;
+    return { x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
   }
 
   function routeEdge(a, b, lane) {
@@ -489,22 +618,16 @@ export function initSystems(systems) {
 
   function layoutGeometry() {
     if (!svg || mobileQuery.matches) return;
-    const bounds = svg.getBoundingClientRect();
-    if (bounds.width < 2 || bounds.height < 2) return;
-    svg.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
+    const width = pivot?.clientWidth || nodesRoot.clientWidth;
+    const height = pivot?.clientHeight || nodesRoot.clientHeight;
+    if (width < 2 || height < 2) return;
+    const viewBox = `0 0 ${width} ${height}`;
+    svg.setAttribute("viewBox", viewBox);
+    planeList.forEach((plane) => plane.draw.setAttribute("viewBox", viewBox));
     const boxes = new Map();
     nodeButtons.forEach((button, id) => {
       if (button.hidden) return;
       boxes.set(id, boxOf(button));
-    });
-    outlinePaths.forEach((path, id) => {
-      const box = boxes.get(id);
-      path.setAttribute("d", box ? rectPath(box) : "");
-      const mark = stampMarks.get(id);
-      if (!mark || !box) return;
-      mark.setAttribute("x", String(box.x + box.w - 14));
-      mark.setAttribute("y", String(box.y + 7));
-      mark.setAttribute("opacity", stamped.has(id) ? "1" : "0");
     });
     const edges = visibleEdges();
     const lanes = laneFor(edges);
@@ -525,7 +648,361 @@ export function initSystems(systems) {
       label.setAttribute("x", String(point.x));
       label.setAttribute("y", String(point.y - 8));
     });
+    applySpatial();
   }
+
+  function cancelSpread() {
+    if (spreadFrame) cancelAnimationFrame(spreadFrame);
+    spreadFrame = 0;
+    stack?.classList.remove("is-moving");
+  }
+
+  function syncViewControl() {
+    viewSwitch?.querySelectorAll("button").forEach((button) => {
+      button.setAttribute("aria-pressed", button.dataset.view === view ? "true" : "false");
+    });
+  }
+
+  function stackScale() {
+    if (!canSpatial() || spinAmount < 0.08 || !diagram) return 1;
+    const width = nodesRoot.clientWidth || 1;
+    const height = nodesRoot.clientHeight || 1;
+    const bounds = diagram.getBoundingClientRect();
+    const radX = ((55 * Math.PI) / 180) * spinAmount;
+    const radZ = ((32 * Math.PI) / 180) * spinAmount;
+    const zSpan = Math.max(planeList.length - 1, 0) * planeGap * spinAmount;
+    const boost = 1.36;
+    const projectedH = (Math.abs(height * Math.cos(radX)) + Math.abs(zSpan * Math.sin(radX))) * boost;
+    const projectedW = (Math.abs(width * Math.cos(radZ)) + Math.abs(height * Math.sin(radZ))) * boost;
+    const fit = Math.min((bounds.width || width) / projectedW, (bounds.height || height) / projectedH);
+    return clamp(fit, 0.58, 1);
+  }
+
+  function fitKey() {
+    return `${planeList.length}:${Math.round(spinAmount * 20)}:${diagram?.clientWidth || 0}:${diagram?.clientHeight || 0}`;
+  }
+
+  function rememberFit(scale) {
+    const key = fitKey();
+    if (fitMemo.key === key) return fitMemo;
+    const box = diagram.getBoundingClientRect();
+    const rects = planeList.map((plane) => plane.slab.getBoundingClientRect());
+    if (!rects.length || box.width < 2 || box.height < 2) return { key, scale, x: 0, y: 0 };
+    const left = Math.min(...rects.map((rect) => rect.left));
+    const right = Math.max(...rects.map((rect) => rect.right));
+    const top = Math.min(...rects.map((rect) => rect.top));
+    const bottom = Math.max(...rects.map((rect) => rect.bottom));
+    const fit = Math.min(box.width / (right - left || 1), box.height / (bottom - top || 1), 1);
+    const next = clamp(scale * fit * 0.92, 0.58, 1);
+    const ratio = scale ? next / scale : 1;
+    const x = (box.left + box.width / 2 - (left + right) / 2) * ratio;
+    const y = (box.top + box.height / 2 - (top + bottom) / 2) * ratio;
+    fitMemo = { key, scale: next, x, y };
+    return fitMemo;
+  }
+
+  function labelSharp(depth, scale) {
+    const rad = ((55 * spinAmount) * Math.PI) / 180;
+    const viewZ = scale * depth * Math.cos(rad);
+    const persp = 1600 / (1600 - viewZ || 1600);
+    const screen = scale * persp;
+    if (!Number.isFinite(screen) || screen < 0.2) return 1;
+    return 1 / screen;
+  }
+
+  function placeSegment(el, x1, y1, z1, x2, y2, z2, alpha, hot) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const dz = z2 - z1;
+    const length = Math.hypot(dx, dy, dz);
+    if (!el) return;
+    if (length < 1.5 || alpha <= 0) {
+      el.style.opacity = "0";
+      return;
+    }
+    const yaw = Math.atan2(dy, dx);
+    const pitch = Math.atan2(dz, Math.hypot(dx, dy));
+    el.style.opacity = String(alpha);
+    el.classList.toggle("is-hot", hot);
+    el.style.width = `${length}px`;
+    el.style.transform = `translate3d(${x1}px, ${y1}px, ${z1}px) rotateY(${-pitch}rad) rotateZ(${yaw}rad)`;
+  }
+
+  function endpoint(id) {
+    const button = nodeButtons.get(id);
+    if (!button || button.hidden) return null;
+    const box = boxOf(button);
+    return {
+      x: box.cx,
+      y: box.cy,
+      z: Number(button.dataset.depth || 0),
+      plane: button.dataset.plane || "",
+    };
+  }
+
+  function paintPlanes() {
+    const focus = canSpatial() && mode === "explore" && spinAmount > 0.55 && selectedId;
+    const chosen = focus ? planeKey(nodeById(selectedId)?.kind) : "";
+    planeList.forEach((plane) => {
+      const on = plane.id === chosen;
+      plane.element.classList.toggle("is-chosen", Boolean(focus && on));
+      plane.element.style.opacity = focus && !on ? "0.35" : "1";
+    });
+    nodeButtons.forEach((button, id) => {
+      if (!focus) {
+        button.style.opacity = "";
+        return;
+      }
+      const node = nodeById(id);
+      const on = Boolean(node && planeKey(node.kind) === chosen);
+      button.style.opacity = on ? "" : "0.35";
+      if (!on) {
+        const outline = outlinePaths.get(id);
+        if (outline) outline.style.opacity = "1";
+      }
+    });
+  }
+
+  function applySpatial() {
+    if (!stack || !pivot) return;
+    const open = canSpatial() && (spinAmount > 0.001 || planeList.some((plane) => plane.amount > 0.001));
+    stack.classList.toggle("is-spatial", open);
+    if (!open) {
+      fitMemo = { key: "", scale: 1, x: 0, y: 0 };
+      pivot.style.transform = "none";
+      pivot.style.removeProperty("--spin-x");
+      pivot.style.removeProperty("--spin-y");
+      pivot.style.removeProperty("--spin-z");
+      planeList.forEach((plane) => {
+        plane.z = 0;
+        plane.element.style.transform = "none";
+        plane.slab.style.opacity = "0";
+        plane.element.style.opacity = "1";
+      });
+      nodeButtons.forEach((button) => {
+        button.style.transform = "none";
+        button.dataset.depth = "0";
+        button.style.opacity = "";
+      });
+      if (crossGroup) crossGroup.style.opacity = "1";
+      riserEntries.forEach((entry) => {
+        entry.vertical.style.opacity = "0";
+        entry.across.style.opacity = "0";
+        if (entry.anchor) entry.anchor.style.opacity = "0";
+      });
+      return;
+    }
+    const tilt = spinAmount > 0.35 ? { x: tiltX, y: tiltY } : { x: 0, y: 0 };
+    const spinX = 55 * spinAmount + tilt.x;
+    const spinY = tilt.y;
+    const spinZ = -32 * spinAmount;
+    let scale = stackScale();
+    let shiftX = 0;
+    let shiftY = 0;
+    if (fitMemo.key === fitKey()) {
+      scale = fitMemo.scale;
+      shiftX = fitMemo.x;
+      shiftY = fitMemo.y;
+    }
+    const writePivot = (nextScale, x, y) => {
+      pivot.style.setProperty("--fit", String(nextScale));
+      pivot.style.transform = `translate(${x}px, ${y}px) scale(${nextScale}) rotateX(${spinX}deg) rotateY(${spinY}deg) rotateZ(${spinZ}deg)`;
+    };
+    pivot.style.setProperty("--spin-x", `${spinX}deg`);
+    pivot.style.setProperty("--spin-y", `${spinY}deg`);
+    pivot.style.setProperty("--spin-z", `${spinZ}deg`);
+    const mid = (planeList.length - 1) / 2;
+    planeList.forEach((plane, index) => {
+      const z = (mid - index) * planeGap * plane.amount;
+      plane.z = z;
+      plane.element.style.transform = `translateZ(${z}px)`;
+      plane.slab.style.opacity = String(plane.amount);
+    });
+    writePivot(scale, shiftX, shiftY);
+    if (spinAmount > 0.2 && fitMemo.key !== fitKey()) {
+      const fitted = rememberFit(scale);
+      scale = fitted.scale;
+      shiftX = fitted.x;
+      shiftY = fitted.y;
+      writePivot(scale, shiftX, shiftY);
+    }
+    const liftOn = mode === "explore" && spinAmount > 0.65;
+    nodeButtons.forEach((button, id) => {
+      const plane = planeById.get(button.dataset.plane);
+      const lift = liftOn && id === selectedId ? selectedLift : 0;
+      const z = (plane?.z || 0) + lift;
+      button.dataset.depth = String(z);
+      button.style.transform = `translateZ(${z}px)`;
+      button.style.setProperty("--label-sharp", labelSharp(z, scale).toFixed(4));
+    });
+    const fade = clamp(spinAmount / 0.28, 0, 1);
+    if (crossGroup) crossGroup.style.opacity = String(1 - fade);
+    const dimming = mode === "explore" && spinAmount > 0.55;
+    riserEntries.forEach((entry) => {
+      const from = endpoint(entry.edge.from);
+      const to = endpoint(entry.edge.to);
+      if (!from || !to || fade <= 0) {
+        entry.vertical.style.opacity = "0";
+        entry.across.style.opacity = "0";
+        if (entry.anchor) entry.anchor.style.opacity = "0";
+        return;
+      }
+      const hot = entry.edge.from === selectedId || entry.edge.to === selectedId;
+      const alpha = dimming && !hot ? fade * 0.35 : fade;
+      placeSegment(entry.vertical, from.x, from.y, from.z, from.x, from.y, to.z, alpha, hot && dimming);
+      placeSegment(entry.across, from.x, from.y, to.z, to.x, to.y, to.z, alpha, hot && dimming);
+      if (!entry.anchor) return;
+      const show = alpha > 0.2 && spinAmount > 0.45;
+      entry.anchor.style.opacity = show ? String(Math.min(1, alpha)) : "0";
+      entry.anchor.style.transform = `translate3d(${from.x}px, ${from.y}px, ${(from.z + to.z) / 2}px)`;
+    });
+    paintPlanes();
+  }
+
+  function writeSpread(spread, { staggered = false } = {}) {
+    cancelSpread();
+    const eased = glideUnit(clamp(spread, 0, 1));
+    spinAmount = eased;
+    const lead = staggered ? 0.38 : 0;
+    const count = planeList.length;
+    planeList.forEach((plane, index) => {
+      const start = !staggered || count <= 1 ? 0 : (index / (count - 1)) * lead;
+      plane.amount = clamp((eased - start) / (1 - lead || 1), 0, 1);
+    });
+    view = eased > 0.5 ? "exploded" : "flat";
+    if (eased < 0.04) {
+      aimX = 0;
+      aimY = 0;
+      tiltX = 0;
+      tiltY = 0;
+    }
+    syncViewControl();
+    applySpatial();
+  }
+
+  function animateSpread(target) {
+    if (!canSpatial()) {
+      view = "flat";
+      spinAmount = 0;
+      planeList.forEach((plane) => {
+        plane.amount = 0;
+      });
+      syncViewControl();
+      applySpatial();
+      return;
+    }
+    cancelSpread();
+    const originSpin = spinAmount;
+    const originPlanes = planeList.map((plane) => plane.amount);
+    const opening = target >= originSpin;
+    const started = performance.now();
+    const durationMs = duration.explode * 1000;
+    const staggerMs = delay.explode * 1000;
+    stack?.classList.add("is-moving");
+    const step = (now) => {
+      if (pageHidden()) {
+        spreadFrame = 0;
+        return;
+      }
+      const elapsed = now - started;
+      let pending = false;
+      const spinT = clamp(elapsed / durationMs, 0, 1);
+      if (spinT < 1) pending = true;
+      spinAmount = originSpin + (target - originSpin) * glideUnit(spinT);
+      planeList.forEach((plane, index) => {
+        const wait = (opening ? index : planeList.length - 1 - index) * staggerMs;
+        const local = clamp((elapsed - wait) / durationMs, 0, 1);
+        if (elapsed < wait + durationMs) pending = true;
+        plane.amount = originPlanes[index] + (target - originPlanes[index]) * glideUnit(local);
+      });
+      view = target === 1 ? "exploded" : "flat";
+      syncViewControl();
+      applySpatial();
+      if (pending) {
+        spreadFrame = requestAnimationFrame(step);
+        return;
+      }
+      spreadFrame = 0;
+      spinAmount = target;
+      planeList.forEach((plane) => {
+        plane.amount = target;
+      });
+      if (target === 0) {
+        aimX = 0;
+        aimY = 0;
+        tiltX = 0;
+        tiltY = 0;
+      }
+      stack?.classList.remove("is-moving");
+      applySpatial();
+      paintPlanes();
+    };
+    spreadFrame = requestAnimationFrame(step);
+  }
+
+  function setView(next, { animate = true } = {}) {
+    if (!canSpatial()) {
+      view = "flat";
+      spinAmount = 0;
+      planeList.forEach((plane) => {
+        plane.amount = 0;
+      });
+      syncViewControl();
+      applySpatial();
+      return;
+    }
+    view = next;
+    syncViewControl();
+    const target = next === "exploded" ? 1 : 0;
+    if (!animate) {
+      cancelSpread();
+      spinAmount = target;
+      planeList.forEach((plane) => {
+        plane.amount = target;
+      });
+      if (target === 0) {
+        aimX = 0;
+        aimY = 0;
+        tiltX = 0;
+        tiltY = 0;
+      }
+      applySpatial();
+      return;
+    }
+    animateSpread(target);
+  }
+
+  function kickTilt() {
+    if (tiltFrame || !canSpatial()) return;
+    tiltStamp = performance.now();
+    const step = (now) => {
+      if (pageHidden()) {
+        tiltFrame = 0;
+        return;
+      }
+      const dt = Math.min(48, now - tiltStamp);
+      tiltStamp = now;
+      const blend = 1 - Math.exp(-dt / 140);
+      tiltX += (aimX - tiltX) * blend;
+      tiltY += (aimY - tiltY) * blend;
+      applySpatial();
+      if (Math.abs(aimX - tiltX) < 0.02 && Math.abs(aimY - tiltY) < 0.02) {
+        tiltX = aimX;
+        tiltY = aimY;
+        applySpatial();
+        tiltFrame = 0;
+        return;
+      }
+      tiltFrame = requestAnimationFrame(step);
+    };
+    tiltFrame = requestAnimationFrame(step);
+  }
+
+  onPageVisibility((isHidden) => {
+    if (isHidden) return;
+    if (!spreadFrame && stack?.classList.contains("is-moving")) animateSpread(view === "exploded" ? 1 : 0);
+    if (!tiltFrame && (Math.abs(aimX - tiltX) > 0.02 || Math.abs(aimY - tiltY) > 0.02)) kickTilt();
+  });
 
   function paintOffset(path, progress) {
     path.style.strokeDashoffset = String(1 - clamp(progress, 0, 1));
@@ -565,7 +1042,8 @@ export function initSystems(systems) {
     if (!published || !current || current.id !== published.id) return;
     const nodes = published.nodes;
     const steps = nodes.length;
-    const { active, local } = storyPosition(progress, steps);
+    const reveal = clamp(progress / storySplit, 0, 1);
+    const { active, local } = storyPosition(reveal, steps);
     const activeNode = nodes[active];
     selectedId = activeNode.id;
     nodes.forEach((node, index) => {
@@ -602,6 +1080,9 @@ export function initSystems(systems) {
     });
     const shown = visibleNodes();
     fillBrief(activeNode, shown.findIndex((node) => node.id === activeNode.id), shown.length);
+    if (canSpatial()) {
+      writeSpread(clamp((progress - storySplit) / (1 - storySplit), 0, 1), { staggered: true });
+    }
   }
 
   function showDrawn() {
@@ -621,6 +1102,7 @@ export function initSystems(systems) {
       });
       button.classList.toggle("is-active", on);
       button.classList.toggle("is-settled", !on && !button.hidden);
+      button.classList.toggle("is-stamped", stamped.has(id));
       button.style.color = on ? "var(--acid)" : "rgb(255 255 255 / 62%)";
       button.setAttribute("aria-pressed", on ? "true" : "false");
       button.setAttribute("aria-disabled", mode === "explore" ? "false" : "true");
@@ -645,9 +1127,7 @@ export function initSystems(systems) {
     const node = nodeById(selected);
     const index = shown.findIndex((item) => item.id === selected);
     fillBrief(node, index, shown.length);
-    stampMarks.forEach((mark, id) => {
-      mark.setAttribute("opacity", stamped.has(id) ? "1" : "0");
-    });
+    applySpatial();
   }
 
   function syncView() {
@@ -734,6 +1214,15 @@ export function initSystems(systems) {
   function unlockExplore() {
     storyLive = false;
     setMode("explore");
+    if (canSpatial()) {
+      cancelSpread();
+      view = "exploded";
+      spinAmount = 1;
+      planeList.forEach((plane) => {
+        plane.amount = 1;
+      });
+      syncViewControl();
+    }
     showDrawn();
   }
 
@@ -806,7 +1295,12 @@ export function initSystems(systems) {
     travelPaths.forEach((path) => path.remove());
     travelPaths = [];
     svg.querySelectorAll(".trace-crumb").forEach((crumb) => crumb.remove());
+    risersRoot?.querySelectorAll(".pulse-crumb").forEach((crumb) => crumb.remove());
     if (traceDot) traceDot.setAttribute("opacity", "0");
+    if (tracePulse) {
+      tracePulse.style.opacity = "0";
+      tracePulse.hidden = true;
+    }
     traceButton.disabled = mode !== "explore";
     diagram.removeAttribute("aria-busy");
   }
@@ -832,11 +1326,98 @@ export function initSystems(systems) {
     traceDot.setAttribute("opacity", "1");
   }
 
+  function dropSpatialCrumb(x, y, z) {
+    const crumb = document.createElement("span");
+    crumb.className = "pulse-crumb";
+    crumb.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
+    risersRoot?.append(crumb);
+    gsap?.to(crumb, {
+      opacity: 0,
+      duration: duration.crumb,
+      ease: ease.settle,
+      onComplete: () => crumb.remove(),
+    });
+  }
+
+  function movePulse(x, y, z) {
+    if (!tracePulse) return;
+    if (traceDot) traceDot.setAttribute("opacity", "0");
+    tracePulse.hidden = false;
+    tracePulse.style.opacity = "1";
+    tracePulse.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
+  }
+
   function placeDot(id) {
-    const button = nodeButtons.get(id);
-    if (!button || button.hidden) return;
-    const box = boxOf(button);
-    moveDot(box.cx, box.cy);
+    const point = endpoint(id);
+    if (!point) return;
+    if (canSpatial() && spinAmount > 0.4) {
+      movePulse(point.x, point.y, point.z);
+      return;
+    }
+    if (tracePulse) {
+      tracePulse.style.opacity = "0";
+      tracePulse.hidden = true;
+    }
+    moveDot(point.x, point.y);
+  }
+
+  function followTrace(fromId, toId, progress, state) {
+    const from = endpoint(fromId);
+    const to = endpoint(toId);
+    const spatial = canSpatial() && spinAmount > 0.4 && from && to;
+    if (spatial && from.plane !== to.plane) {
+      const zLen = Math.abs(to.z - from.z);
+      const xyLen = Math.hypot(to.x - from.x, to.y - from.y);
+      const total = zLen + xyLen || 1;
+      const along = progress * total;
+      let x;
+      let y;
+      let z;
+      if (along <= zLen || xyLen < 1) {
+        const local = zLen ? Math.min(1, along / zLen) : 1;
+        x = from.x;
+        y = from.y;
+        z = from.z + (to.z - from.z) * local;
+      } else {
+        const local = (along - zLen) / xyLen;
+        x = from.x + (to.x - from.x) * local;
+        y = from.y + (to.y - from.y) * local;
+        z = to.z;
+      }
+      movePulse(x, y, z);
+      if (progress - state.crumb >= 0.14) {
+        state.crumb = progress;
+        dropSpatialCrumb(x, y, z);
+      }
+      return;
+    }
+    const travel = state.travel;
+    if (!travel?.path?.getTotalLength) {
+      placeDot(toId);
+      return;
+    }
+    const length = travel.path.getTotalLength();
+    if (!length) return;
+    const distance = (travel.reverse ? 1 - progress : progress) * length;
+    const point = travel.path.getPointAtLength(distance);
+    if (spatial) {
+      const z = from.z + (to.z - from.z) * progress;
+      movePulse(point.x, point.y, z);
+      if (progress - state.crumb >= 0.14) {
+        state.crumb = progress;
+        dropSpatialCrumb(point.x, point.y, z);
+      }
+      return;
+    }
+    if (tracePulse) {
+      tracePulse.style.opacity = "0";
+      tracePulse.hidden = true;
+    }
+    moveDot(point.x, point.y);
+    if (progress - state.crumb >= 0.14) {
+      state.crumb = progress;
+      dropCrumb(point.x, point.y);
+    }
   }
 
   function travelPath(fromId, toId) {
@@ -861,7 +1442,6 @@ export function initSystems(systems) {
     stamped.add(id);
     nodeButtons.get(id)?.classList.add("is-stamped");
     stepper.querySelector(`[data-step="${id}"]`)?.classList.add("is-stamped");
-    stampMarks.get(id)?.setAttribute("opacity", "1");
     const node = nodeById(id);
     if (node) traceLive.textContent = `Tracing ${node.label}`;
   }
@@ -872,7 +1452,6 @@ export function initSystems(systems) {
     stamped.clear();
     nodeButtons.forEach((button) => button.classList.remove("is-stamped"));
     stepper.querySelectorAll(".step").forEach((step) => step.classList.remove("is-stamped"));
-    stampMarks.forEach((mark) => mark.setAttribute("opacity", "0"));
     const ids = visibleNodes().map((node) => node.id);
     if (!ids.length) return;
     diagram.setAttribute("aria-busy", "true");
@@ -888,6 +1467,7 @@ export function initSystems(systems) {
         traceButton.disabled = mode !== "explore";
         diagram.removeAttribute("aria-busy");
         if (traceDot) gsap.to(traceDot, { opacity: 0, duration: duration.traceFade, ease: ease.settle });
+        if (tracePulse) gsap.to(tracePulse, { opacity: 0, duration: duration.traceFade, ease: ease.settle });
       },
     });
     traceTween = timeline;
@@ -913,20 +1493,7 @@ export function initSystems(systems) {
           state.crumb = 0;
         },
         onUpdate: () => {
-          const travel = state.travel;
-          if (!travel?.path?.getTotalLength) {
-            placeDot(id);
-            return;
-          }
-          const length = travel.path.getTotalLength();
-          if (!length) return;
-          const distance = (travel.reverse ? 1 - state.p : state.p) * length;
-          const point = travel.path.getPointAtLength(distance);
-          moveDot(point.x, point.y);
-          if (state.p - state.crumb >= 0.14) {
-            state.crumb = state.p;
-            dropCrumb(point.x, point.y);
-          }
+          followTrace(ids[index - 1], id, state.p, state);
         },
         onComplete: () => stamp(id),
       });
@@ -1042,6 +1609,34 @@ export function initSystems(systems) {
 
   traceButton.addEventListener("click", traceRequest);
 
+  viewSwitch?.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-view]");
+    if (!button || mode !== "explore" || !canSpatial()) return;
+    const next = button.dataset.view;
+    if (next !== "flat" && next !== "exploded") return;
+    if (next === "exploded" && spinAmount > 0.98) return;
+    if (next === "flat" && spinAmount < 0.02) return;
+    setView(next);
+  });
+
+  diagramColumn.addEventListener("pointermove", (event) => {
+    if (!canSpatial() || spinAmount < 0.35 || !stack) return;
+    const bounds = stack.getBoundingClientRect();
+    if (bounds.width < 2 || bounds.height < 2) return;
+    const nx = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
+    const ny = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
+    aimY = clamp(nx, -1, 1) * 6;
+    aimX = clamp(-ny, -1, 1) * 6;
+    kickTilt();
+  });
+
+  diagramColumn.addEventListener("pointerleave", () => {
+    aimX = 0;
+    aimY = 0;
+    if (Math.abs(tiltX) < 0.02 && Math.abs(tiltY) < 0.02) return;
+    kickTilt();
+  });
+
   document.addEventListener(
     "click",
     (event) => {
@@ -1070,6 +1665,7 @@ export function initSystems(systems) {
     if (mobileQuery.matches) {
       stopStoryPin();
       setMode("explore");
+      setView("flat", { animate: false });
     }
     briefKey = "";
     if (current) {
@@ -1083,6 +1679,7 @@ export function initSystems(systems) {
     if (motion.matches) {
       stopStoryPin();
       setMode("explore");
+      setView("flat", { animate: false });
       showDrawn();
     }
   });

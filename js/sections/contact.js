@@ -1,6 +1,7 @@
-import { onArrive } from "../core/arrive.js";
-import { duration, ease } from "../core/motion.config.js";
+import { stepSpring } from "../core/spring.js";
 import { prefersReducedMotion } from "../core/motion.js";
+import { qualityTier, whileVisible } from "../core/quality.js";
+import { initContactGlyphs } from "./contactGlyphs.js";
 
 /* Must run inside the click gesture. An awaited Clipboard rejection expires it. */
 function copyFromField(text) {
@@ -65,37 +66,93 @@ function startBengaluruClock(clock) {
     const parts = Object.fromEntries(stamp.formatToParts(now).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
     clock.dateTime = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}+05:30`;
   };
-  tick();
-  setInterval(tick, 1000);
+  let timer = 0;
+  whileVisible(
+    () => {
+      if (timer) return;
+      tick();
+      timer = window.setInterval(tick, 1000);
+    },
+    () => {
+      if (!timer) return;
+      window.clearInterval(timer);
+      timer = 0;
+    },
+  );
 }
 
-function initTitle(section) {
-  const title = section.querySelector(".contact-title");
-  const gsap = window.gsap;
-  if (!title || !gsap || prefersReducedMotion()) return;
-  gsap.set(title, { clipPath: "inset(0 100% 0 0)" });
-  onArrive(section, "top 78%", () => {
-    gsap.to(title, {
-      clipPath: "inset(0 0% 0 0)",
-      duration: duration.titleWipe,
-      ease: ease.snap,
-      overwrite: true,
-      onComplete() {
-        title.style.clipPath = "";
-      },
-    });
+function armCopyPress(button) {
+  if (prefersReducedMotion() || qualityTier() === "low") return;
+  const press = { value: 1, velocity: 0 };
+  let target = 1;
+  let frame = 0;
+  let last = 0;
+  let held = false;
+
+  const tick = (now) => {
+    const dt = Math.min(0.032, last ? (now - last) / 1000 : 0.016);
+    last = now;
+    stepSpring(press, target, dt);
+    const settled = Math.abs(press.value - target) < 0.0008 && Math.abs(press.velocity) < 0.02;
+    if (settled) {
+      frame = 0;
+      last = 0;
+      if (target === 1) {
+        press.value = 1;
+        press.velocity = 0;
+        button.style.transform = "";
+      } else {
+        button.style.transform = `scale(${press.value.toFixed(4)})`;
+      }
+      return;
+    }
+    button.style.transform = `scale(${press.value.toFixed(4)})`;
+    frame = requestAnimationFrame(tick);
+  };
+
+  const poke = () => {
+    if (!frame) frame = requestAnimationFrame(tick);
+  };
+
+  const depress = () => {
+    held = true;
+    target = 0.92;
+    press.velocity -= 1.2;
+    poke();
+  };
+
+  const release = () => {
+    if (!held) return;
+    held = false;
+    target = 1;
+    press.velocity += 0.35;
+    poke();
+  };
+
+  button.addEventListener("pointerdown", depress);
+  button.addEventListener("keydown", (event) => {
+    if (event.repeat || (event.key !== "Enter" && event.key !== " ")) return;
+    depress();
   });
+  window.addEventListener("pointerup", release);
+  window.addEventListener("pointercancel", release);
+  button.addEventListener("keyup", (event) => {
+    if (event.key === "Enter" || event.key === " ") release();
+  });
+  button.addEventListener("blur", release);
 }
 
 export function initContact() {
-  const section = document.getElementById("contact");
-  if (section) initTitle(section);
-  const button = document.querySelector("[data-copy-email]");
-  const status = document.getElementById("copyStatus");
   const clock = document.querySelector(".contact-clock");
   if (clock) startBengaluruClock(clock);
+  const section = document.querySelector(".contact");
+  if (section) initContactGlyphs(section);
+
+  const button = document.querySelector("[data-copy-email]");
+  const status = document.getElementById("copyStatus");
   if (!button || !status) return;
 
+  armCopyPress(button);
   button.addEventListener("click", () => {
     const email = button.getAttribute("data-copy-email") || "";
     if (copyFromField(email)) {

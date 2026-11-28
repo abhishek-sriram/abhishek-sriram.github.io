@@ -1,4 +1,3 @@
-import { onArrive } from "../core/arrive.js";
 import { duration, ease } from "../core/motion.config.js";
 import { prefersReducedMotion } from "../core/motion.js";
 
@@ -125,28 +124,8 @@ function armPrinciples(section, reduced) {
   });
 }
 
-function initTracking(section) {
-  const heading = section.querySelector("h2");
-  const gsap = window.gsap;
-  if (!heading || !gsap || prefersReducedMotion()) return;
-  gsap.set(heading, { letterSpacing: "0.28em" });
-  onArrive(section, "top 78%", () => {
-    gsap.to(heading, {
-      letterSpacing: "0.04em",
-      duration: duration.track,
-      ease: ease.glide,
-      overwrite: true,
-      onComplete() {
-        gsap.set(heading, { clearProps: "letterSpacing" });
-      },
-    });
-  });
-}
-
 export function initAbout() {
   const section = document.getElementById("about");
   if (!section) return;
-  const reduced = prefersReducedMotion();
-  armPrinciples(section, reduced);
-  initTracking(section);
+  armPrinciples(section, prefersReducedMotion());
 }

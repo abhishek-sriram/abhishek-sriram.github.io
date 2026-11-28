@@ -36,12 +36,14 @@
   margin: 0;
   padding: 0;
   border-top: 1px solid color-mix(in srgb, var(--paper) 22%, transparent);
+  perspective: 900px;
 }
 
 .project-row {
   border-bottom: 1px solid color-mix(in srgb, var(--paper) 22%, transparent);
-  opacity: 1;
-  transition: opacity var(--duration-row, 0.5s) var(--ease-snap);
+  transform: rotateX(var(--drum-tilt, 0deg));
+  transform-origin: center center;
+  opacity: var(--drum-fade, 1);
 }
 
 .project-summary {
@@ -168,12 +170,22 @@
   top: 0;
   left: 0;
   width: min(17.5rem, calc(100vw - 1.5rem));
-  padding: 0.75rem 0.75rem 0.9rem;
-  background: var(--paper);
-  color: var(--ink);
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--duration-ui) var(--ease-glide);
+}
+
+.project-plate-space {
+  perspective: 900px;
+}
+
+.project-plate-stage {
+  padding: 0.75rem 0.75rem 0.9rem;
+  background: var(--paper);
+  color: var(--ink);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-origin: center center;
 }
 
 .project-plate.is-on {
@@ -184,6 +196,10 @@
   display: block;
   width: 100%;
   height: auto;
+}
+
+.project-plate .project-motif {
+  transform: translateZ(calc(var(--z-base) * 24px));
 }
 
 .project-motif line {
@@ -197,6 +213,7 @@
 
 .project-plate-result {
   margin-top: 0.75rem;
+  transform: translateZ(calc(var(--z-raised) * 24px));
   font-family: var(--font-display);
   font-optical-sizing: none;
   font-weight: 560;
@@ -211,7 +228,43 @@
   flex-wrap: wrap;
   gap: 0.35rem 0.75rem;
   margin-top: 0.45rem;
+  transform: translateZ(calc(var(--z-float) * 24px));
   color: var(--grey);
+}
+
+.case-field {
+  position: relative;
+  height: clamp(11rem, 28vh, 15rem);
+  margin-bottom: clamp(1.25rem, 3vh, 2rem);
+  perspective: 900px;
+  pointer-events: none;
+}
+
+.case-field-layer {
+  position: absolute;
+  inset: 1.25rem 0;
+  transform-style: preserve-3d;
+  color: var(--paper);
+}
+
+.case-field-layer[data-depth="0"] {
+  --layer-z: calc(var(--z-base) * 24px);
+  color: var(--grey);
+}
+
+.case-field-layer[data-depth="1"] {
+  --layer-z: calc(var(--z-raised) * 24px);
+}
+
+.case-field-layer[data-depth="2"] {
+  --layer-z: calc(var(--z-float) * 24px);
+  color: var(--acid);
+}
+
+.case-field .project-motif {
+  width: min(100%, 28rem);
+  height: 100%;
+  margin-inline: auto;
 }
 
 .case-file {
@@ -360,7 +413,7 @@ html.js .project-details > .project-dossier {
   }
 
   .projects.is-browsing .project-row.is-quiet {
-    opacity: 1;
+    opacity: var(--drum-fade, 1);
   }
 
   .project-line {
@@ -416,5 +469,60 @@ html.js .project-details > .project-dossier {
 
   .case-layout {
     grid-template-columns: 1fr;
+  }
+}
+
+html.is-case-morph::view-transition-old(root),
+html.is-case-morph::view-transition-new(root) {
+  animation: none;
+}
+
+html.is-case-morph::view-transition-group(case-plate) {
+  animation-duration: var(--duration-reveal);
+  animation-timing-function: var(--ease-snap);
+}
+
+html.is-case-morph::view-transition-old(case-plate),
+html.is-case-morph::view-transition-new(case-plate) {
+  mix-blend-mode: normal;
+  animation-duration: var(--duration-reveal);
+  animation-timing-function: var(--ease-snap);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-rows {
+    perspective: none;
+  }
+
+  .project-row {
+    transform: none;
+    opacity: 1;
+  }
+
+  .projects.is-browsing .project-row.is-quiet {
+    opacity: 0.25;
+  }
+
+  .project-plate-space {
+    perspective: none;
+  }
+
+  .project-plate-stage,
+  .project-plate .project-motif,
+  .project-plate .project-plate-result,
+  .project-plate .project-plate-tags,
+  .case-field,
+  .case-field-layer {
+    transform: none;
+  }
+
+  .case-file {
+    transition: none;
+  }
+}
+
+@media (max-width: 719px) and (prefers-reduced-motion: reduce) {
+  .projects.is-browsing .project-row.is-quiet {
+    opacity: 1;
   }
 }

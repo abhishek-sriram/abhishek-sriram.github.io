@@ -2,7 +2,9 @@ import { onArrive } from "../core/arrive.js";
 import { clamp } from "../core/clamp.js";
 import { delay, duration, ease } from "../core/motion.config.js";
 import { prefersReducedMotion } from "../core/motion.js";
+import { onPageVisibility, pageHidden } from "../core/quality.js";
 import { getLenis } from "../core/scroll.js";
+import { createCaseField } from "./projects/caseField.js";
 import { createPlate } from "./projects/plate.js";
 
 const mobileQuery = window.matchMedia("(max-width: 719px)");
@@ -37,6 +39,7 @@ export function initProjects() {
   if (!section || !dialog) return;
 
   const plate = createPlate();
+  const caseField = createCaseField();
   document.body.append(plate.root);
 
   const dossiers = new Map();
@@ -78,6 +81,8 @@ export function initProjects() {
   let plateFrame = 0;
   let pointerHot = false;
   let armedId = null;
+  let tiltRow = null;
+  let liveMorph = null;
 
   function knownSlug(hash) {
     const slug = slugFromHash(hash);
@@ -148,11 +153,18 @@ export function initProjects() {
     if (!record) return;
     record.details.open = false;
     record.row.classList.remove("is-open");
+    record.dossier.querySelector(".case-head")?.style.removeProperty("view-transition-name");
+    if (record.dossier.contains(caseField.root)) {
+      caseField.stop();
+      caseField.root.remove();
+    }
     if (record.dossier.parentElement !== record.details) record.details.append(record.dossier);
   }
 
   function disarm() {
     armedId = null;
+    tiltRow = null;
+    plate.tilt(null, null);
     plate.root.classList.remove("is-on");
     section.classList.remove("is-browsing");
     dossiers.forEach((record) => record.row.classList.remove("is-quiet"));
@@ -175,9 +187,14 @@ export function initProjects() {
     const x = clamp(currentX + 20, plateInset, Math.max(plateInset, window.innerWidth - width - plateInset));
     const y = clamp(currentY + 22, plateInset, Math.max(plateInset, window.innerHeight - height - plateInset));
     plate.root.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    if (plate.root.classList.contains("is-on") && tiltRow) plate.tilt(targetX, targetY, tiltRow);
   }
 
   function trackPlate() {
+    if (pageHidden()) {
+      plateFrame = 0;
+      return;
+    }
     const gain = prefersReducedMotion() ? 1 : 0.18;
     currentX += (targetX - currentX) * gain;
     currentY += (targetY - currentY) * gain;
@@ -190,12 +207,18 @@ export function initProjects() {
     plateFrame = 0;
   }
 
+  onPageVisibility((isHidden) => {
+    if (isHidden || plateFrame || !plate.root.classList.contains("is-on")) return;
+    plateFrame = requestAnimationFrame(trackPlate);
+  });
+
   function arm(record, instant) {
     if (!plateAllowed()) return;
     if (armedId !== record.id) {
       plate.paint(record);
       armedId = record.id;
     }
+    tiltRow = record.row;
     plate.root.classList.add("is-on");
     section.classList.add("is-browsing");
     dossiers.forEach((dossier) => dossier.row.classList.toggle("is-quiet", dossier !== record));
@@ -226,7 +249,34 @@ export function initProjects() {
     });
   }
 
+  let morphToken = 0;
+
+  function endMorph(token, head) {
+    if (token !== morphToken) return;
+    liveMorph = null;
+    document.documentElement.classList.remove("is-case-morph");
+    plate.root.style.removeProperty("view-transition-name");
+    plate.root.style.transition = "";
+    head?.style.removeProperty("view-transition-name");
+  }
+
+  function haltMorph() {
+    morphToken += 1;
+    const running = liveMorph;
+    liveMorph = null;
+    document.documentElement.classList.remove("is-case-morph");
+    plate.root.style.removeProperty("view-transition-name");
+    if (!running) return;
+    try {
+      running.skipTransition();
+    } catch {
+      // Already finished or skipped.
+    }
+  }
+
   function requestClose({ keepHash = false, immediate = false } = {}) {
+    if (!dialog.open && !liveMorph) return;
+    haltMorph();
     if (!dialog.open) return;
     if (closing) {
       if (immediate) finishClose(keepHash);
@@ -261,52 +311,97 @@ export function initProjects() {
     if (dialog.open && currentId === id) return;
 
     if (currentId && currentId !== id) park(dossiers.get(currentId));
-    disarm();
+    haltMorph();
 
     if (align) scrollToRow(record.row);
 
-    const heading = record.dossier.querySelector(".case-title");
-    const active = document.activeElement;
-    const usable = active instanceof HTMLElement && active !== document.body && active !== document.documentElement;
-    returnFocus = usable ? active : record.summary;
-    currentId = id;
-    record.details.open = false;
-    dialog.append(record.dossier);
-    record.details.open = true;
-    record.row.classList.add("is-open");
-    dossiers.forEach((dossier) => {
-      if (dossier !== record) {
-        dossier.details.open = false;
-        dossier.row.classList.remove("is-open");
-      }
-    });
-
-    if (heading?.id) dialog.setAttribute("aria-labelledby", heading.id);
-    writeHash(id, historyMode);
-
-    const rect = record.summary.getBoundingClientRect();
     const reduce = prefersReducedMotion();
-    dialog.style.transition = "none";
-    dialog.style.clipPath = reduce ? "inset(0px)" : insetClip(rect);
-    if (!dialog.open) dialog.showModal();
-    pauseScroll();
-    dialog.tabIndex = -1;
-    dialog.focus({ preventScroll: true });
+    const head = record.dossier.querySelector(".case-head");
+    const canMorph =
+      !reduce &&
+      head &&
+      typeof document.startViewTransition === "function" &&
+      plate.root.classList.contains("is-on") &&
+      plate.root.getClientRects().length > 0;
 
-    if (reduce) {
+    const commit = (mode) => {
+      if (mode === "morph") {
+        plate.root.style.transition = "none";
+        plate.root.style.removeProperty("view-transition-name");
+      }
+      disarm();
+
+      const heading = record.dossier.querySelector(".case-title");
+      const active = document.activeElement;
+      const usable = active instanceof HTMLElement && active !== document.body && active !== document.documentElement;
+      returnFocus = usable ? active : record.summary;
+      currentId = id;
+      record.details.open = false;
+      dialog.append(record.dossier);
+      record.details.open = true;
+      record.row.classList.add("is-open");
+      dossiers.forEach((dossier) => {
+        if (dossier !== record) {
+          dossier.details.open = false;
+          dossier.row.classList.remove("is-open");
+        }
+      });
+
+      if (heading?.id) dialog.setAttribute("aria-labelledby", heading.id);
+      writeHash(id, historyMode);
+
+      dialog.style.transition = "none";
+      if (mode === "clip") dialog.style.clipPath = insetClip(record.summary.getBoundingClientRect());
+      else dialog.style.clipPath = "inset(0px)";
+      if (mode === "morph") head.style.viewTransitionName = "case-plate";
+
+      if (!dialog.open) dialog.showModal();
+      pauseScroll();
+      dialog.tabIndex = -1;
+      dialog.focus({ preventScroll: true });
+
+      caseField.paint(record.title);
+      if (head) head.after(caseField.root);
+      else record.dossier.prepend(caseField.root);
+      caseField.start();
+
+      if (mode === "clip") {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (currentId !== id || !dialog.open) return;
+            dialog.style.transition = "";
+            dialog.style.clipPath = "inset(0px)";
+          });
+        });
+        return;
+      }
+
       requestAnimationFrame(() => {
         dialog.style.transition = "";
+        plate.root.style.transition = "";
       });
+    };
+
+    if (!canMorph) {
+      commit(reduce ? "instant" : "clip");
       return;
     }
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (currentId !== id || !dialog.open) return;
-        dialog.style.transition = "";
-        dialog.style.clipPath = "inset(0px)";
-      });
-    });
+    morphToken += 1;
+    const token = morphToken;
+    plate.root.style.viewTransitionName = "case-plate";
+    document.documentElement.classList.add("is-case-morph");
+    let transition;
+    try {
+      transition = document.startViewTransition(() => commit("morph"));
+    } catch {
+      endMorph(token, head);
+      commit("clip");
+      return;
+    }
+    liveMorph = transition;
+    const done = () => endMorph(token, head);
+    transition.finished.then(done, done);
   }
 
   function activate(record) {
@@ -356,6 +451,11 @@ export function initProjects() {
     requestClose();
   });
 
+  dialog.addEventListener("pointermove", (event) => {
+    if (!dialog.open) return;
+    caseField.aim(event.clientX, event.clientY);
+  });
+
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog || event.target.closest(".case-close")) {
       requestClose();
@@ -369,11 +469,15 @@ export function initProjects() {
   document.addEventListener("click", (event) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const link = event.target.closest?.("a[href^='#']");
-    if (!link || link.closest(".case-file")) return;
+    if (!link) return;
+    if (link.closest(".case-file") || link.closest(".project-dossier")) {
+      requestClose({ keepHash: true, immediate: true });
+      return;
+    }
     const id = knownSlug(link.getAttribute("href"));
     if (!id) return;
     openCase(id, { historyMode: "replace", align: true });
-  });
+  }, true);
 
   window.addEventListener("popstate", () => {
     const id = knownSlug(location.hash);
@@ -427,10 +531,83 @@ export function initProjects() {
   mobileQuery.addEventListener("change", dropPlate);
   fineQuery.addEventListener("change", dropPlate);
   window.addEventListener("resize", () => {
+    drumScroll = Number.NaN;
     if (plate.root.classList.contains("is-on")) placePlate();
   });
 
   const rows = [...section.querySelectorAll(".project-row")];
+  const lists = [...section.querySelectorAll(".project-rows")];
+  let sectionNear = false;
+  let drumCleared = true;
+  let drumScroll = Number.NaN;
+
+  function clearDrum() {
+    if (drumCleared) return;
+    drumCleared = true;
+    rows.forEach((row) => {
+      row.style.removeProperty("--drum-tilt");
+      row.style.removeProperty("--drum-fade");
+    });
+    lists.forEach((list) => list.style.removeProperty("perspective-origin"));
+  }
+
+  function paintDrum() {
+    if (prefersReducedMotion()) {
+      clearDrum();
+      return;
+    }
+    if (!sectionNear || dialog.open) return;
+    const scroll = window.scrollY;
+    if (scroll === drumScroll) return;
+    drumScroll = scroll;
+    const height = window.innerHeight || 1;
+    const mid = height / 2;
+    const rowRects = rows.map((row) => row.getBoundingClientRect());
+    const listRects = lists.map((list) => list.getBoundingClientRect());
+    const visible = rowRects.some((rect) => rect.bottom > 0 && rect.top < height);
+    if (!visible) {
+      clearDrum();
+      return;
+    }
+    drumCleared = false;
+    lists.forEach((list, index) => {
+      list.style.perspectiveOrigin = `center ${mid - listRects[index].top}px`;
+    });
+    rows.forEach((row, index) => {
+      const rect = rowRects[index];
+      const center = rect.top + rect.height * 0.5;
+      const span = clamp((center - mid) / mid, -1, 1);
+      const bend = span * span * span;
+      row.style.setProperty("--drum-tilt", `${(-bend * 8).toFixed(3)}deg`);
+      row.style.setProperty("--drum-fade", (1 - Math.abs(bend) * 0.55).toFixed(3));
+    });
+  }
+
+  const drumWatch = new IntersectionObserver(
+    ([entry]) => {
+      sectionNear = entry.isIntersecting;
+    },
+    { rootMargin: "15% 0px" },
+  );
+  drumWatch.observe(section);
+  window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", () => {
+    drumScroll = Number.NaN;
+  });
+  if (window.gsap) window.gsap.ticker.add(paintDrum);
+  else {
+    let drumRaf = 0;
+    const loopDrum = () => {
+      drumRaf = 0;
+      if (pageHidden()) return;
+      paintDrum();
+      drumRaf = requestAnimationFrame(loopDrum);
+    };
+    onPageVisibility((isHidden) => {
+      if (!isHidden && !drumRaf) drumRaf = requestAnimationFrame(loopDrum);
+    });
+    drumRaf = requestAnimationFrame(loopDrum);
+  }
+
   const gsap = window.gsap;
   if (rows.length && gsap && !prefersReducedMotion()) {
     gsap.set(rows, { clipPath: "inset(0 0 0 2.25rem)" });

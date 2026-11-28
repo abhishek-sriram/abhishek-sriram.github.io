@@ -148,7 +148,10 @@ section {
 }
 
 .clock {
+  display: inline-block;
+  min-width: 9ch;
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .index-overlay {
@@ -292,32 +295,64 @@ section {
 
 .cursor-ring {
   position: absolute;
-  width: 1.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 1.375rem;
   height: 1.375rem;
+  padding: 0;
+  overflow: hidden;
   border: 1px solid currentColor;
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(1);
-  transition: transform var(--duration-ui) var(--ease-snap);
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  transition:
+    min-width var(--duration-ui) var(--ease-snap),
+    height var(--duration-ui) var(--ease-snap),
+    padding var(--duration-ui) var(--ease-snap),
+    transform var(--duration-ui) var(--ease-snap);
 }
 
-.cursor.is-hot .cursor-ring {
+.cursor.is-hot:not(.has-label):not(.is-down) .cursor-ring {
   transform: translate(-50%, -50%) scale(1.85);
 }
 
+.cursor.has-label:not(.is-down) .cursor-ring {
+  height: 1.75rem;
+  padding-inline: 0.7rem;
+}
+
+.cursor.is-down .cursor-ring {
+  min-width: 0.4rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  padding: 0;
+  transform: translate(-50%, -50%);
+}
+
 .cursor-label {
-  position: absolute;
-  left: 1.15rem;
-  top: 0;
-  transform: translateY(-50%);
+  display: block;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
   font-family: var(--font-mono);
   font-size: var(--step-label);
   letter-spacing: 0.04em;
+  line-height: 1;
   white-space: nowrap;
-  opacity: 0;
+  transition:
+    max-width var(--duration-ui) var(--ease-snap),
+    opacity var(--duration-ui) var(--ease-snap);
 }
 
-.cursor.has-label .cursor-label {
+.cursor.has-label:not(.is-down) .cursor-label {
+  max-width: 9rem;
   opacity: 1;
+}
+
+.cursor.is-down .cursor-label {
+  max-width: 0;
+  opacity: 0;
 }
 
 .split-source {
@@ -382,4 +417,48 @@ html:not(.js) .rail {
   .cursor {
     display: none;
   }
+}
+
+.iris {
+  position: fixed;
+  z-index: 65;
+  inset: 0;
+  pointer-events: none;
+}
+
+.signal-band {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--paper);
+  padding-block: 0.04em;
+}
+
+.signal-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.signal-band .signal-run {
+  max-width: none;
+  margin: 0;
+  flex: 0 0 auto;
+  width: max-content;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  padding-right: 0.55em;
+  font-size: var(--step-label);
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px var(--paper);
+}
+
+/* Sits in About's handoff padding; the extra bottom pad keeps the type clear of Credentials' overlap. */
+html[data-motion="full"] .signal-band {
+  margin-top: calc(var(--handoff, 120px) * -1);
+  padding-bottom: var(--handoff, 120px);
 }

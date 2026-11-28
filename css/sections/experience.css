@@ -96,7 +96,7 @@
   color: color-mix(in srgb, var(--cobalt) calc(var(--read) * 100%), var(--paper));
   font-family: var(--font-display);
   font-optical-sizing: none;
-  font-size: clamp(2.75rem, 1.5rem + 3vw, 4.75rem);
+  font-size: clamp(1.5rem, 1rem + 1.2vw, 2.35rem);
   font-weight: 520;
   font-variation-settings: "opsz" 96, "wdth" 90, "wght" 520;
   font-variant-numeric: tabular-nums;
@@ -256,7 +256,7 @@
   html.js .month-ruler {
     display: block;
     position: absolute;
-    z-index: 1;
+    z-index: var(--z-raised);
     top: 0;
     bottom: 0;
     left: 0;

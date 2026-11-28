@@ -1,5 +1,6 @@
 import { duration, ease } from "./motion.config.js";
 import { prefersReducedMotion } from "./motion.js";
+import { whileVisible } from "./quality.js";
 import { getLenis } from "./scroll.js";
 
 const opener = () => document.querySelector(".index-open");
@@ -96,16 +97,24 @@ function openIndex() {
   items[0]?.focus();
 }
 
-function closeIndex(restore) {
+export function releaseIndex() {
   const panel = overlay();
   const button = opener();
   if (!panel || panel.hidden) return;
   window.gsap?.killTweensOf(lines());
-  if (restore || panel.contains(document.activeElement)) button?.focus({ preventScroll: true });
   panel.hidden = true;
   button?.setAttribute("aria-expanded", "false");
   setParked(false);
   unlockScroll();
+}
+
+function closeIndex(restore) {
+  const panel = overlay();
+  const button = opener();
+  if (!panel || panel.hidden) return;
+  const restoreFocus = restore || panel.contains(document.activeElement);
+  releaseIndex();
+  if (restoreFocus) button?.focus({ preventScroll: true });
 }
 
 function onKeydown(event) {
@@ -163,7 +172,19 @@ function startClock() {
     clock.dateTime = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}+05:30`;
   };
   tick();
-  setInterval(tick, 1000);
+  let timer = 0;
+  whileVisible(
+    () => {
+      if (timer) return;
+      tick();
+      timer = window.setInterval(tick, 1000);
+    },
+    () => {
+      if (!timer) return;
+      window.clearInterval(timer);
+      timer = 0;
+    },
+  );
 }
 
 export function initChrome() {

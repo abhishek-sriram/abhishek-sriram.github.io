@@ -12,7 +12,7 @@ function anchorOffset() {
   return -Math.ceil(height + 12);
 }
 
-function focusDestination(target) {
+export function focusDestination(target) {
   const labelledby = target.getAttribute("aria-labelledby");
   const node = (labelledby && document.getElementById(labelledby)) || target;
   if (!node.matches("a, button, input, textarea, select") && !node.hasAttribute("tabindex")) {
@@ -21,16 +21,22 @@ function focusDestination(target) {
   node.focus({ preventScroll: true });
 }
 
-function scrollToTarget(target) {
+export function scrollToTarget(target, { immediate = false } = {}) {
   if (lenis) {
-    lenis.scrollTo(target, { offset: anchorOffset() });
+    lenis.scrollTo(target, { offset: anchorOffset(), immediate, force: true });
+    if (immediate) window.ScrollTrigger?.update();
+    return;
+  }
+  if (immediate) {
+    const top = window.scrollY + target.getBoundingClientRect().top + anchorOffset();
+    window.scrollTo(0, top);
     return;
   }
   target.scrollIntoView({ block: "start" });
 }
 
 /* #systems/<system>/<node> is a workbench deep link, not a CSS id. */
-function elementFromHash(hash) {
+export function elementFromHash(hash) {
   if (!hash || hash === "#") return null;
   let id = hash.slice(1);
   try {

@@ -6,24 +6,17 @@ export function initHeroName(section, { reduced }) {
   const letters = [...section.querySelectorAll(".hero-letter")];
   if (!letters.length || reduced) return;
 
-  const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
   const state = letters.map(() => ({ wdth: REST_WDTH, wght: REST_WGHT }));
   const targets = letters.map(() => ({ wdth: REST_WDTH, wght: REST_WGHT }));
   let pointer = null;
-  let mode = fine.matches ? "rest" : "wave";
+  let mode = "rest";
   let dirty = false;
   let visible = true;
   let hidden = document.hidden;
   let raf = 0;
   let lastNow = 0;
 
-  function write(index, wdth, wght) {
-    const letter = letters[index];
-    letter.style.setProperty("--wdth", wdth.toFixed(2));
-    letter.style.setProperty("--wght", wght.toFixed(1));
-  }
-
-  function aim(now) {
+  function aim() {
     if (mode === "track") {
       if (!pointer || !dirty) return;
       for (let i = 0; i < letters.length; i += 1) {
@@ -38,15 +31,6 @@ export function initHeroName(section, { reduced }) {
       dirty = false;
       return;
     }
-    if (mode === "wave") {
-      const time = now * 0.001;
-      for (let i = 0; i < letters.length; i += 1) {
-        const wave = Math.sin(time * 0.85 + i * 0.38);
-        targets[i].wdth = 86 + wave * 6;
-        targets[i].wght = 480 + wave * 110;
-      }
-      return;
-    }
     for (let i = 0; i < letters.length; i += 1) {
       targets[i].wdth = REST_WDTH;
       targets[i].wght = REST_WGHT;
@@ -57,14 +41,19 @@ export function initHeroName(section, { reduced }) {
     raf = 0;
     const dt = lastNow ? Math.min(34, now - lastNow) : 16;
     lastNow = now;
-    aim(now);
+    aim();
     const blend = 1 - Math.exp(-dt / 70);
-    let moving = mode === "wave";
+    let moving = false;
     for (let i = 0; i < letters.length; i += 1) {
       state[i].wdth += (targets[i].wdth - state[i].wdth) * blend;
       state[i].wght += (targets[i].wght - state[i].wght) * blend;
       if (Math.abs(targets[i].wdth - state[i].wdth) > 0.15 || Math.abs(targets[i].wght - state[i].wght) > 0.8) moving = true;
-      write(i, state[i].wdth, state[i].wght);
+      const swell = (state[i].wght - REST_WGHT) / 480;
+      const lift = (state[i].wdth - REST_WDTH) / 24;
+      const pending = document.documentElement.classList.contains("is-pending");
+      const flat = Math.abs(swell) < 0.01 && Math.abs(lift) < 0.01;
+      letters[i].style.transform = pending || flat ? "" : `translate3d(0, ${(-lift * 4).toFixed(2)}px, 0) scale(${(1 + swell * 0.06).toFixed(4)})`;
+      if (pending) moving = true;
     }
     if (moving && visible && !hidden) raf = requestAnimationFrame(frame);
   }
@@ -74,12 +63,7 @@ export function initHeroName(section, { reduced }) {
   }
 
   section.addEventListener("pointermove", (event) => {
-    if (event.pointerType === "touch") {
-      pointer = null;
-      mode = "wave";
-      poke();
-      return;
-    }
+    if (event.pointerType === "touch") return;
     pointer = { x: event.clientX, y: event.clientY };
     mode = "track";
     dirty = true;
@@ -89,7 +73,7 @@ export function initHeroName(section, { reduced }) {
   section.addEventListener("pointerleave", () => {
     pointer = null;
     dirty = false;
-    mode = fine.matches ? "rest" : "wave";
+    mode = "rest";
     poke();
   });
 
@@ -103,6 +87,4 @@ export function initHeroName(section, { reduced }) {
     if (visible) poke();
   }, { threshold: 0.05 });
   observer.observe(section);
-
-  if (mode === "wave") poke();
 }

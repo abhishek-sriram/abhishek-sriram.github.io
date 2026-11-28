@@ -27,7 +27,11 @@
 }
 
 .about h2 {
+  --wdth: 100;
+  --wght: 700;
   margin-top: 0.35rem;
+  font-weight: var(--wght);
+  font-variation-settings: "wdth" var(--wdth), "wght" var(--wght);
 }
 
 .about-statement {
@@ -72,7 +76,7 @@
 
 .about-facts {
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-raised);
   top: 0;
   bottom: 0;
   left: 0;

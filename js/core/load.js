@@ -28,8 +28,10 @@ function markSeen() {
 export function initLoad(hero) {
   const root = document.documentElement;
   const release = () => hero?.releaseIntro?.();
-  if (!shouldPlayLoad()) {
+  const painted = performance.getEntriesByType("paint").length > 0;
+  if (!shouldPlayLoad() || painted) {
     root.classList.remove("is-pending");
+    if (painted) release();
     return;
   }
   const gsap = window.gsap;

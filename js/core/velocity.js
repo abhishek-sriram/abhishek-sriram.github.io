@@ -2,7 +2,7 @@ import { duration, skewMax, velocity } from "./motion.config.js";
 import { prefersReducedMotion } from "./motion.js";
 import { getLenis } from "./scroll.js";
 
-const HEADINGS = ".hero-name, .contact-title";
+const HEADINGS = ".contact-title";
 
 let pace = 0;
 

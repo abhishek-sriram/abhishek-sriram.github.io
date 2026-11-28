@@ -1,4 +1,4 @@
-import { duration, ease, glide, handoff, settle, snap } from "./motion.config.js";
+import { delay, duration, ease, glide, handoff, settle, snap } from "./motion.config.js";
 
 export { duration, ease, glide, handoff, settle, snap };
 
@@ -17,6 +17,13 @@ export function applyMotionConfig() {
   root.style.setProperty("--duration-token", `${duration.token}s`);
   root.style.setProperty("--duration-credential", `${duration.credential}s`);
   root.style.setProperty("--duration-index", `${duration.index}s`);
+  root.style.setProperty("--duration-letter", `${duration.letter}s`);
+  root.style.setProperty("--duration-query", `${duration.queryIn}s`);
+  root.style.setProperty("--duration-results", `${duration.results}s`);
+  root.style.setProperty("--duration-slit", `${duration.slit}s`);
+  root.style.setProperty("--delay-letter", `${delay.letter}s`);
+  root.style.setProperty("--delay-query", `${delay.query}s`);
+  root.style.setProperty("--delay-group", `${delay.group}s`);
   root.style.setProperty("--ease-snap", ease.snap);
   root.style.setProperty("--ease-glide", ease.glide);
   root.style.setProperty("--handoff", `${handoff}px`);

@@ -11,9 +11,6 @@ try {
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   document.documentElement.dataset.motion = reduce ? "reduce" : "full";
   if (!reduce && !deep) document.documentElement.dataset.story = "1";
-  if (!reduce && !deep && localStorage.getItem("index-directed") !== "1") {
-    document.documentElement.classList.add("is-pending");
-  }
 } catch (e) {}
 </script>
 <title>Abhishek Sriram — AI Engineer · Applied AI Field Journal</title>
@@ -59,14 +56,19 @@ try {
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:wght@400..800&family=Martian+Mono:wdth,wght@75..112,400..700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:wght@400..800&family=Martian+Mono:wdth,wght@75..112,400..700&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:wght@400..800&family=Martian+Mono:wdth,wght@75..112,400..700&display=swap"></noscript>
-<link rel="stylesheet" href="css/tokens.css">
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/type.css">
-<link rel="stylesheet" href="css/layout.css">
-<link rel="stylesheet" href="css/sections/hero.css">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:wght@400..800&family=Martian+Mono:wdth,wght@75..112,300..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:wght@400..800&family=Martian+Mono:wdth,wght@75..112,300..700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:wght@400..800&family=Martian+Mono:wdth,wght@75..112,300..700&display=swap"></noscript>
+<link rel="stylesheet" href="css/critical.css">
+<link rel="stylesheet" href="css/sections/systems.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="css/sections/experience.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="css/sections/projects.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="css/sections/toolkit.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="css/sections/about.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="css/sections/credentials.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="css/sections/contact.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="css/sections/footer.css" media="print" onload="this.media='all'">
+<noscript>
 <link rel="stylesheet" href="css/sections/systems.css">
 <link rel="stylesheet" href="css/sections/experience.css">
 <link rel="stylesheet" href="css/sections/projects.css">
@@ -75,6 +77,7 @@ try {
 <link rel="stylesheet" href="css/sections/credentials.css">
 <link rel="stylesheet" href="css/sections/contact.css">
 <link rel="stylesheet" href="css/sections/footer.css">
+</noscript>
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <!-- OG image: export img/og.svg to img/og.png (1200×630) for most social crawlers. -->
@@ -113,15 +116,15 @@ try {
   <canvas class="hero-field" width="300" height="200" aria-hidden="true"></canvas>
   <p class="hero-volume" aria-hidden="true">01</p>
   <div class="page hero-page">
-    <p class="label hero-kicker">Applied AI Field Journal / Vol. 01 / Bengaluru / <time datetime="2026-11">November 2026</time></p>
+    <p class="label hero-kicker hero-read">Applied AI Field Journal / Vol. 01 / Bengaluru / <time datetime="2026-11">November 2026</time></p>
     <h1 id="hero-title" class="hero-name">
       <span class="split-source">Abhishek Sriram</span>
       <span class="hero-line" aria-hidden="true"><span class="hero-letter" style="--i:0">A</span><span class="hero-letter" style="--i:1">b</span><span class="hero-letter" style="--i:2">h</span><span class="hero-letter" style="--i:3">i</span><span class="hero-letter" style="--i:4">s</span><span class="hero-letter" style="--i:5">h</span><span class="hero-letter" style="--i:6">e</span><span class="hero-letter" style="--i:7">k</span></span>
       <span class="hero-line" aria-hidden="true"><span class="hero-letter" style="--i:8">S</span><span class="hero-letter" style="--i:9">r</span><span class="hero-letter" style="--i:10">i</span><span class="hero-letter" style="--i:11">r</span><span class="hero-letter" style="--i:12">a</span><span class="hero-letter" style="--i:13">m</span></span>
     </h1>
-    <p class="hero-support">AI engineer at Infobell IT, Bengaluru. LLM, RAG and agentic systems.</p>
+    <p class="hero-support hero-read">AI engineer at Infobell IT, Bengaluru. LLM, RAG and agentic systems.</p>
     <form class="hero-query" role="search" action="#hero-results">
-      <label class="label hero-query-label" for="hero-query-input">Query the index</label>
+      <label class="label hero-query-label hero-read" for="hero-query-input">Query the index</label>
       <div class="hero-query-row">
         <input id="hero-query-input" type="search" name="q" placeholder="production RAG" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-describedby="hero-query-note" aria-controls="hero-results">
         <button class="hero-submit" type="submit">Retrieve</button>
@@ -132,7 +135,7 @@ try {
         <button class="hero-chip" type="button" data-query="agents">agents</button>
         <button class="hero-chip" type="button" data-query="published research">published research</button>
       </div>
-      <p id="hero-query-note" class="hero-query-note">Ranked by tag and keyword match. Not a real embedding model.</p>
+      <p id="hero-query-note" class="hero-query-note hero-read">Ranked by tag and keyword match. Not a real embedding model.</p>
     </form>
     <div class="hero-foot">
       <div id="hero-results" class="hero-results" aria-live="polite" aria-atomic="true" aria-label="Query results"></div>
@@ -147,15 +150,15 @@ try {
       <ul class="hero-proof">
         <li>
           <span class="hero-proof-value" role="group" aria-label="94%"><span data-count="94" data-suffix="%" aria-hidden="true">94%</span></span>
-          <span class="hero-proof-caption">semantic search accuracy, legislative eBook</span>
+          <span class="hero-proof-caption hero-read">semantic search accuracy, legislative eBook</span>
         </li>
         <li>
           <span class="hero-proof-value" role="group" aria-label="93.3%"><span data-count="93.3" data-decimals="1" data-suffix="%" aria-hidden="true">93.3%</span></span>
-          <span class="hero-proof-caption">stress-detection accuracy</span>
+          <span class="hero-proof-caption hero-read">stress-detection accuracy</span>
         </li>
         <li>
           <a class="hero-proof-value" href="https://ieeexplore.ieee.org/document/11554646" target="_blank" rel="noopener" data-cursor="Open">IEEE</a>
-          <span class="hero-proof-caption">MindPulse paper published</span>
+          <span class="hero-proof-caption hero-read">MindPulse paper published</span>
         </li>
       </ul>
     </div>
@@ -182,8 +185,15 @@ try {
         </div>
         <div class="diagram-column">
           <div class="diagram" role="group" aria-label="Architecture">
-            <svg class="diagram-draw" aria-hidden="true"></svg>
-            <div class="diagram-nodes"></div>
+            <div class="stack">
+              <div class="stack-pivot">
+                <div class="planes" aria-hidden="true"></div>
+                <svg class="diagram-draw" aria-hidden="true"></svg>
+                <div class="diagram-nodes"></div>
+                <div class="risers" aria-hidden="true"></div>
+                <span class="trace-pulse" aria-hidden="true"></span>
+              </div>
+            </div>
           </div>
           <ol class="stepper"></ol>
         </div>
@@ -195,6 +205,10 @@ try {
         </aside>
       </div>
       <div class="workbench-controls">
+        <div class="view-switch" role="group" aria-label="Diagram view">
+          <button type="button" data-view="flat" aria-pressed="true">Flat</button>
+          <button type="button" data-view="exploded" aria-pressed="false">Exploded</button>
+        </div>
         <div class="layer-switch" role="group" aria-label="Layers"></div>
         <button type="button" class="trace-request">Trace a request</button>
       </div>
@@ -360,11 +374,13 @@ try {
             </span>
           </summary>
           <div class="project-dossier">
+            <div class="case-head">
             <div class="case-top">
             <p class="label case-kicker">Lead case file</p>
               <button type="button" class="case-close">Close</button>
             </div>
             <h3 class="case-title" id="case-mindpulse-title" tabindex="-1">MindPulse</h3>
+            </div>
             <div class="case-layout">
               <div class="project-copy">
                 <p>A full‑stack AI platform screening young adults for depression and anxiety using PHQ‑9 and GAD‑7, extended with ML severity prediction, SHAP explainability, a custom Mental Health Index, real‑time risk escalation and longitudinal tracking.</p>
@@ -406,10 +422,12 @@ try {
             </span>
           </summary>
           <div class="project-dossier">
+            <div class="case-head">
             <div class="case-top">
               <button type="button" class="case-close">Close</button>
             </div>
             <h3 class="case-title" id="case-rag-qa-title" tabindex="-1">RAG-based QA Chatbot</h3>
+            </div>
             <div class="case-layout">
               <div class="project-copy">
                 <p>Retrieval‑augmented question‑answering bot that grounds LLM responses in PDF source documents for accurate, citation‑backed answers.</p>
@@ -442,10 +460,12 @@ try {
             </span>
           </summary>
           <div class="project-dossier">
+            <div class="case-head">
             <div class="case-top">
               <button type="button" class="case-close">Close</button>
             </div>
             <h3 class="case-title" id="case-stress-title" tabindex="-1">Stress Detection ANN</h3>
+            </div>
             <div class="case-layout">
               <div class="project-copy">
                 <p>Neural‑network system classifying human stress levels from physiological signals, later deployed as a Django web app during my Infosys Springboard internship.</p>
@@ -478,10 +498,12 @@ try {
             </span>
           </summary>
           <div class="project-dossier">
+            <div class="case-head">
             <div class="case-top">
               <button type="button" class="case-close">Close</button>
             </div>
             <h3 class="case-title" id="case-courses-title" tabindex="-1">Course Recommender System</h3>
+            </div>
             <div class="case-layout">
               <div class="project-copy">
                 <p>Personalized online‑course recommendation engine built with Scikit‑Learn and Scikit‑Surprise, lifting user engagement by 40%.</p>
@@ -519,10 +541,12 @@ try {
             </span>
           </summary>
           <div class="project-dossier">
+            <div class="case-head">
             <div class="case-top">
               <button type="button" class="case-close">Close</button>
             </div>
             <h3 class="case-title" id="case-spacex-title" tabindex="-1">SpaceX Falcon 9 Landing Prediction</h3>
+            </div>
             <div class="case-layout">
               <div class="project-copy">
                 <p>ML models predicting Falcon 9 first‑stage landing success using the SpaceX API, Pandas and classical classifiers.</p>
@@ -555,10 +579,12 @@ try {
             </span>
           </summary>
           <div class="project-dossier">
+            <div class="case-head">
             <div class="case-top">
               <button type="button" class="case-close">Close</button>
             </div>
             <h3 class="case-title" id="case-sentiment-title" tabindex="-1">Sentiment Analysis on Movie Reviews</h3>
+            </div>
             <div class="case-layout">
               <div class="project-copy">
                 <p>Naive Bayes sentiment classifier distinguishing positive from negative IMDB movie reviews.</p>
@@ -724,6 +750,13 @@ try {
   </div>
 </section>
 
+<div class="signal-band" aria-hidden="true">
+  <div class="signal-track">
+    <p class="signal-run display">Retrieval Latency Observability Privacy</p>
+    <p class="signal-run display">Retrieval Latency Observability Privacy</p>
+  </div>
+</div>
+
 <section class="credentials" id="credentials" data-surface="paper" aria-labelledby="credentials-title">
   <div class="page">
     <p class="label">Credentials</p>
@@ -780,7 +813,7 @@ try {
     <p class="label">Correspondence</p>
     <h2 id="contact-title" class="contact-title">Say hello.</h2>
     <div class="contact-reach">
-      <a class="contact-email" href="mailto:abhisriram15@gmail.com" data-magnet="0.18">abhisriram15@gmail.com</a>
+      <a class="contact-email" href="mailto:abhisriram15@gmail.com" data-magnet="0.18" aria-label="abhisriram15@gmail.com">abhisriram15@gmail.com</a>
       <button type="button" class="contact-copy" data-copy-email="abhisriram15@gmail.com" data-cursor="Copy">
         <svg class="contact-check" viewBox="0 0 24 24" aria-hidden="true">
           <path pathLength="1" d="M3.2 12.8C5.6 14.2 6.4 17.8 8.9 18.6C12.4 13.2 15.1 8.4 21.3 4.4"/>
@@ -830,10 +863,41 @@ try {
 
 <dialog class="case-file" id="case-file"></dialog>
 
-<script src="vendor/gsap.min.js" defer></script>
-<script src="vendor/ScrollTrigger.min.js" defer></script>
-<script src="vendor/Flip.min.js" defer></script>
-<script src="vendor/lenis.min.js" defer></script>
-<script type="module" src="js/main.js"></script>
+<script>
+(function () {
+  var files = [
+    "vendor/gsap.min.js",
+    "vendor/ScrollTrigger.min.js",
+    "vendor/Flip.min.js",
+    "vendor/lenis.min.js"
+  ];
+  function load() {
+    var pending = files.length;
+    function done() {
+      pending -= 1;
+      if (pending) return;
+      var mod = document.createElement("script");
+      mod.type = "module";
+      mod.src = "js/main.js";
+      document.body.appendChild(mod);
+    }
+    for (var i = 0; i < files.length; i += 1) {
+      var script = document.createElement("script");
+      script.src = files[i];
+      script.async = false;
+      script.onload = done;
+      script.onerror = done;
+      document.body.appendChild(script);
+    }
+  }
+  function afterPaint() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(load);
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", afterPaint);
+  else afterPaint();
+})();
+</script>
 </body>
 </html>

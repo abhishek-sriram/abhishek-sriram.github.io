@@ -58,3 +58,112 @@ time,
   font-variation-settings: "wdth" 100, "wght" 450;
   letter-spacing: 0.04em;
 }
+
+.title-live,
+.title-live .title-part {
+  --wdth: 100;
+  --wght: 700;
+  font-weight: var(--wght);
+  font-variation-settings: "wdth" var(--wdth), "wght" var(--wght);
+}
+
+.title-part {
+  display: inline;
+  white-space: pre-wrap;
+}
+
+/* currentColor would follow the transparent fill and erase the stroke. */
+.hero-name.is-outline {
+  --glyph: var(--paper);
+}
+
+.hero-name.is-outline .hero-letter,
+.contact-title.is-outline {
+  --fill: 0;
+}
+
+.hero-name.is-outline .hero-letter,
+.contact-title.is-outline,
+.contact-title.is-outline .contact-glyph {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1.5px var(--glyph, currentColor);
+  background-image: linear-gradient(var(--glyph, currentColor), var(--glyph, currentColor));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% calc(var(--fill, 0) * 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.contact-title.is-outline:has(.contact-glyph) {
+  background: none;
+  -webkit-text-stroke: 0;
+}
+
+.contact-title.is-outline {
+  --glyph: var(--ink);
+}
+
+.hero-name.is-outline .hero-letter::selection,
+.contact-title.is-outline::selection,
+.contact-title.is-outline .contact-glyph::selection {
+  -webkit-text-fill-color: var(--ink);
+  -webkit-text-stroke: 0;
+  color: var(--ink);
+  background: var(--acid);
+}
+
+.decode-char {
+  position: relative;
+}
+
+.decode-glyph {
+  display: none;
+}
+
+.decode-char.is-cycling .decode-real {
+  color: transparent;
+}
+
+.decode-char.is-cycling .decode-glyph {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  user-select: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+.decode-char.is-cycling .decode-glyph::before {
+  content: attr(data-glyph);
+}
+
+.decode-real::selection {
+  color: var(--ink);
+  background: var(--acid);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-name.is-outline .hero-letter,
+  .contact-title.is-outline,
+  .contact-title.is-outline .contact-glyph {
+    color: inherit;
+    -webkit-text-fill-color: currentColor;
+    -webkit-text-stroke: 0;
+    background: none;
+    clip-path: none;
+  }
+
+  .decode-glyph {
+    display: none;
+  }
+
+  .decode-real {
+    color: inherit;
+  }
+}

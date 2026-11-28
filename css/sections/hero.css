@@ -13,8 +13,10 @@ html[data-motion="full"] .hero {
   min-height: calc(100svh + var(--handoff, 120px));
 }
 
-.hero-field {
+.hero-field,
+.hero-field-labels {
   position: absolute;
+  z-index: var(--z-base);
   inset: 0;
   width: 100%;
   height: 100%;
@@ -24,7 +26,9 @@ html[data-motion="full"] .hero {
 
 .hero-volume {
   position: absolute;
-  z-index: 0;
+  z-index: var(--z-back);
+  overflow-anchor: none;
+  opacity: 0.4;
   right: -0.48em;
   bottom: calc(var(--handoff, 120px) + 0.5rem);
   margin: 0;
@@ -42,7 +46,7 @@ html[data-motion="full"] .hero {
 
 .hero-page {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-raised);
   container-type: inline-size;
   min-height: 100vh;
   min-height: 100svh;
@@ -66,14 +70,36 @@ html[data-motion="full"] .hero-page {
   margin: 0;
 }
 
+.hero-read {
+  position: relative;
+  z-index: var(--z-float);
+  isolation: isolate;
+}
+
+.hero-read::before {
+  content: "";
+  position: absolute;
+  z-index: var(--z-back);
+  inset: -0.16em -0.38em;
+  background: var(--ink);
+}
+
 .hero-kicker {
   grid-row: 1;
   max-width: 40rem;
 }
 
+.hero-kicker time {
+  display: inline-block;
+  white-space: nowrap;
+  min-width: 8.6em;
+  line-height: 1.35;
+}
+
 .hero-name {
   position: relative;
   grid-row: 2;
+  height: 1.72em;
   margin-top: 0.35rem;
   font-family: var(--font-display);
   font-optical-sizing: none;
@@ -97,6 +123,7 @@ html[data-motion="full"] .hero-page {
   --wdth: 88;
   --wght: 520;
   display: inline-block;
+  text-align: center;
   font-variation-settings: "opsz" 96, "wdth" var(--wdth), "wght" var(--wght);
 }
 
@@ -104,6 +131,12 @@ html[data-motion="full"] .hero-page {
   grid-row: 3;
   max-width: 34rem;
   margin-top: 0.7rem;
+}
+
+@media (min-width: 900px) {
+  .hero-support {
+    white-space: nowrap;
+  }
 }
 
 .hero-query {
@@ -225,7 +258,7 @@ html[data-motion="full"] .hero-page {
 
 .hero-results {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-float);
   left: 0;
   bottom: calc(100% + 0.75rem);
   width: min(100%, 42rem);
@@ -237,9 +270,9 @@ html[data-motion="full"] .hero-page {
   pointer-events: none;
   transform: translate3d(0, 0.6rem, 0);
   transition:
-    opacity 0.45s var(--ease-glide),
-    transform 0.6s var(--ease-snap),
-    visibility 0s linear 0.45s;
+    opacity var(--duration-results) var(--ease-glide),
+    transform var(--duration-query) var(--ease-snap),
+    visibility 0s linear var(--duration-results);
 }
 
 .hero-results.is-open {
@@ -460,13 +493,25 @@ a.hero-proof-value:focus-visible {
   }
 }
 
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  html.js .hero-letter {
+    animation: hero-name-drift 7.4s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 120ms);
+  }
+}
+
+@keyframes hero-name-drift {
+  0%, 100% { transform: translate3d(0, 0.35px, 0) scale(0.993); }
+  50% { transform: translate3d(0, -0.55px, 0) scale(1.008); }
+}
+
 html:not(.js) .hero-letter {
-  animation: hero-letter-rise 0.72s var(--ease-snap) both;
-  animation-delay: calc(var(--i) * 40ms);
+  animation: hero-letter-rise var(--duration-letter) var(--ease-snap) both;
+  animation-delay: calc(var(--i) * var(--delay-letter));
 }
 
 html:not(.js) .hero-query {
-  animation: hero-query-in 0.6s var(--ease-glide) 1.15s both;
+  animation: hero-query-in var(--duration-query) var(--ease-glide) var(--delay-query) both;
 }
 
 html.is-pending .hero-letter {
